@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>RepairShopr</title>
+  <link rel="stylesheet" type="text/css" href="styles.css">
+
+</head>
+<body>
+  <header>
+    <nav>
+      <ul>
+        <li><a href="#">Dashboard</a></li>
+        <li><a href="#">Customers</a></li>
+        <li><a href="#">Tickets</a></li>
+        <li><a href="#">Inventory</a></li>
+        <li><a href="#">Reports</a></li>
+      </ul>
+    </nav>
+  </header>
+  
+  <main>
+    <div class="container">
+      <div id="content-area">
+        <h1>Asset Search</h1>
+        <form id="search-form">
+          ${searchBarsHTML}
+          <button type="submit" onclick="submitForm(event)">Search</button>
+        </form>
+        <div id="search-results"></div>
+      </div>
+    </div>
+  </main>
+  
+  <footer>
+    <p>&copy; 2023 RepairShopr. All rights reserved.</p>
+  </footer>
+  
+  <script src="script.js"></script>
+  <script>
