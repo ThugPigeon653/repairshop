@@ -1,0 +1,60 @@
+# MUST CHANGE DEFAULT VALUES: 
+#  - DB
+#  - USER
+#  - PASSWORD
+#  - HOST
+#  - PORT
+#
+# This will change the environment variables in each lambda, which point to the rds database
+Resources:
+  EnvironmentVariableUpdater:
+    Type: Custom::EnvironmentVariableUpdater
+    Properties:
+      ServiceToken: !GetAtt EnvironmentVariableUpdaterFunction.Arn
+      FunctionNames:
+        - !Ref AddCustomerFunction
+        - !Ref AddAssetFunction
+        - !Ref AddEmployeeFunction
+        - !Ref AddInvoiceFunction
+        - !Ref AddItemFunction
+        - !Ref AddStockFunction
+        - !Ref AddStoreFunction
+        - !Ref AddTicketFunction
+        - !Ref QueryFunction
+      EnvironmentVariables:
+        DB: !Ref DBParameter
+        USER: !Ref UserParameter
+        PASSWORD: !Ref PasswordParameter
+        HOST: !Ref HostParameter
+        PORT: !Ref PortParameter
+
+  EnvironmentVariableUpdaterFunction:
+    Type: AWS::Lambda::Function
+    Properties:
+      Code:
+        S3Bucket: your-bucket
+        S3Key: your-key
+      Handler: index.handler
+      Runtime: python3.x
+      Timeout: 60
+      Role: !GetAtt EnvironmentVariableUpdaterRole.Arn
+
+  EnvironmentVariableUpdaterRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: lambda.amazonaws.com
+            Action: sts:AssumeRole
+      Policies:
+        - PolicyName: EnvironmentVariableUpdaterPolicy
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: Allow
+                Action:
+                  - lambda:UpdateFunctionConfiguration
+                Resource: "*"

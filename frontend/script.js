@@ -1,88 +1,88 @@
 function asset_search(searchItems) {
-    const contentArea = document.getElementById('content-area');
-    const searchBarsHTML = searchItems
-      .map((item) => `<div class="form-group">
-                        <label for="${item.name}">${item.label}:</label>
-                        <input type="text" id="${item.name}" name="${item.name}" required>
-                      </div>`)
-      .join('');
-  
-    contentArea.innerHTML = `
-      <h1>Asset Search</h1>
-      <form id="search-form">
-        ${searchBarsHTML}
-        <button type="submit" onclick="submitForm(event)">Search</button>
-      </form>
-      <div id="search-results"></div>
-    `;
-  }
-  
-  function submitForm(event) {
-    event.preventDefault(); // Prevent form submission
-  
-    const form = document.getElementById('search-form');
-  
-    // Retrieve the form inputs dynamically
-    const inputs = Array.from(form.elements).filter((element) => element.tagName === 'INPUT');
-    const searchParams = {};
-  
-    inputs.forEach((input) => {
-      if (input.value) {
-        searchParams[input.name] = input.value;
-      }
-    });
-  
-    const payload = {
-      table_name: 'your_table_name', // Replace with the actual table name
-      search_params: searchParams
-    };
-  
-    // Replace the API_URL with your actual API Gateway endpoint URL
-    const API_URL = 'https://api.example.com/search'; 
-  
-    // Send the payload to the API Gateway
-    fetch(API_URL, {
-      method: 'POST',
-      body: JSON.stringify(payload)
-    })
-      .then((response) => response.json())
-      .then((data) => {
-        // Handle the search results here
-        const searchResults = document.getElementById('search-results');
-        searchResults.innerHTML = createResultsTable(data);
-      })
-      .catch((error) => {
-        // Handle any errors here
-        console.error(error);
-      });
-  }
-  
-  function createResultsTable(data) {
-    // Create a table based on the search results data
-    let tableHTML = '<table>';
-  
-    // Add the table headers
-    tableHTML += '<thead><tr>';
-    for (const key in data[0]) {
-      tableHTML += `<th>${key}</th>`;
+  const contentArea = document.getElementById('content-area');
+  const searchBarsHTML = searchItems
+    .map((item) => `<div class="form-group">
+                      <label for="${item.name}">${item.label}:</label>
+                      <input type="text" id="${item.name}" name="${item.name}" required>
+                    </div>`)
+    .join('');
+
+  contentArea.innerHTML = `
+    <h1>Asset Search</h1>
+    <form id="search-form">
+      ${searchBarsHTML}
+      <button type="submit" onclick="submitForm(event)">Search</button>
+    </form>
+    <div id="search-results"></div>
+  `;
+}
+
+function submitForm(event) {
+  event.preventDefault(); // Prevent form submission
+
+  const form = document.getElementById('search-form');
+
+  // Retrieve the form inputs dynamically
+  const inputs = Array.from(form.elements).filter((element) => element.tagName === 'INPUT');
+  const searchParams = {};
+
+  inputs.forEach((input) => {
+    if (input.value) {
+      searchParams[input.name] = input.value;
     }
-    tableHTML += '</tr></thead>';
-  
-    // Add the table rows
-    tableHTML += '<tbody>';
-    data.forEach((row) => {
-      tableHTML += '<tr>';
-      for (const key in row) {
-        tableHTML += `<td>${row[key]}</td>`;
-      }
-      tableHTML += '</tr>';
+  });
+
+  const payload = {
+    table_name: 'your_table_name', // Replace with the actual table name
+    search_params: searchParams
+  };
+
+  // Replace the API_URL with your actual API Gateway endpoint URL
+  const API_URL = 'https://api.example.com/search'; 
+
+  // Send the payload to the API Gateway
+  fetch(API_URL, {
+    method: 'POST',
+    body: JSON.stringify(payload)
+  })
+    .then((response) => response.json())
+    .then((data) => {
+      // Handle the search results here
+      const searchResults = document.getElementById('search-results');
+      searchResults.innerHTML = createResultsTable(data);
+    })
+    .catch((error) => {
+      // Handle any errors here
+      console.error(error);
     });
-    tableHTML += '</tbody>';
-  
-    tableHTML += '</table>';
-  
-    return tableHTML;
+}
+
+function createResultsTable(data) {
+  // Create a table based on the search results data
+  let tableHTML = '<table>';
+
+  // Add the table headers
+  tableHTML += '<thead><tr>';
+  for (const key in data[0]) {
+    tableHTML += `<th>${key}</th>`;
   }
+  tableHTML += '</tr></thead>';
+
+  // Add the table rows
+  tableHTML += '<tbody>';
+  data.forEach((row) => {
+    tableHTML += '<tr>';
+    for (const key in row) {
+      tableHTML += `<td>${row[key]}</td>`;
+    }
+    tableHTML += '</tr>';
+  });
+  tableHTML += '</tbody>';
+
+  tableHTML += '</table>';
+
+  return tableHTML;
+}
   
   const searchItems = {
     customers: [

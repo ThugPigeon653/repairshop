@@ -14,7 +14,7 @@ def get_parameter_value(parameter_name):
         print(f"Error retrieving parameter value: {e}")
         return None
 
-def search_assets(event, context):
+def lambda_handler(event, context):
     try:
         # Retrieve search parameters and table name from the event payload
         search_params = event.get('search_params', {})
