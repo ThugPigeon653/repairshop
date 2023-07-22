@@ -16,105 +16,45 @@
       }
     }
   },
+    "Parameters": {
+      "TENANT": {
+        "Type": "String",
+        "Description": "This is a sample parameter for a string value."
+      },
+      "DBParameter": {
+        "Type": "String",
+        "Description": "DB path to ssm",
+        "Default": "/repair/DBParameter"
+      },
+      "UserParameter": {
+        "Type": "String",
+        "Default": "/repair/UserParameter"
+      },
+      "PasswordParameter": {
+        "Type": "String",
+        "Default": "/repair/PasswordParameter"
+      },
+      "HostParameter": {
+        "Type": "String",
+        "Default": "/repair/HostParameter"
+      },
+      "PortParameter": {
+        "Type": "String",
+        "Default": "/repair/PortParameter"
+      }
+    },
     "Resources": {
-        "DBParameter": {
-            "Type": "AWS::SSM::Parameter",
-            "Properties": {
-              "Type": "String",
-              "Name": "/my-app/database",
-              "Value": "my-database-value"
-            }
-          },
-          "UserParameter": {
-            "Type": "AWS::SSM::Parameter",
-            "Properties": {
-              "Type": "String",
-              "Name": "/my-app/user",
-              "Value": "postgres"
-            }
-          },
-          "PasswordParameter": {
-            "Type": "AWS::SSM::Parameter",
-            "Properties": {
-              "Type": "String",
-              "Name": "/my-app/password",
-              "Value": "satansanta"
-            }
-          },
-          "HostParameter": {
-            "Type": "AWS::SSM::Parameter",
-            "Properties": {
-              "Type": "String",
-              "Name": "/my-app/host",
-              "Value": "placeholder"
-            }
-          },
-          "PortParameter": {
-            "Type": "AWS::SSM::Parameter",
-            "Properties": {
-              "Type": "String",
-              "Name": "/my-app/port",
-              "Value": "5432"
-            }
-          },
-          "RDSSecurityGroup": {
-            "Type": "AWS::RDS::DBSecurityGroup",
-            "Properties": {
-              "GroupDescription": "RDS Security Group",
-              "DBSecurityGroupIngress": [
-                {
-                  "CIDRIP": "0.0.0.0/0"
-                }
-              ],
-              "Tags": [
-                {
-                  "Key": "Name",
-                  "Value": "RDSSecurityGroup"
-                }
-              ]
-            }
-          },
-          "RDSInstance": {
-            "Type": "AWS::RDS::DBInstance",
-            "Properties": {
-              "DBInstanceIdentifier": "MyRDSInstance",
-              "Engine": "postgres",
-              "DBName": "mydatabase",
-              "MasterUsername": {
-                "Fn::GetAtt": ["UserParameter", "Value"]
-              },
-              "MasterUserPassword": {
-                "Fn::GetAtt": ["PasswordParameter", "Value"]
-              },
-              "AllocatedStorage": "20",
-              "DBInstanceClass": "db.t3.micro",
-              "EngineVersion": "14.7",
-              "PubliclyAccessible": false,
-              "DBSecurityGroups": [
-                {
-                  "Ref": "RDSSecurityGroup"
-                }
-              ],
-              "DeletionProtection": false
-            },
-            "Metadata": {
-              "AWS::CloudFormation::Init": {
-                "config": {
-                  "commands": {
-                    "StoreRDSEndpointToSSM": {
-                      "command": {
-                        "Fn::Sub": "aws ssm put-parameter --name ${HostParameter} --value !GetAtt RDSInstance.Endpoint.Address --type String --overwrite"
-                      }
-                    }
-                  }
-                }
-              }
-            },
-            "DependsOn": "RDSSecurityGroup"
-          },
+      "InvokeDefineTablesFunction": {
+        "Type": "Custom::InvokeDefineTablesFunction",
+        "Properties": {
+          "ServiceToken": "arn:aws:lambda:ap-southeast-2:286456780400:function:define-tables",
+          "Payload": {
+            "TENANT": {"Ref": "TENANT"}
+          }
+        }
+      },
         "AddCustomerFunction": {
             "Type": "AWS::Lambda::Function",
-            "DependsOn": "RDSInstance",
             "Properties": {
                 "Code": {
                     "S3Bucket": "repair-lneil",
@@ -142,14 +82,14 @@
                         "USER": { "Ref": "UserParameter" },
                         "PASSWORD": { "Ref": "PasswordParameter" },
                         "HOST": { "Ref": "HostParameter" },
-                        "PORT": { "Ref": "PortParameter" }
+                        "PORT": { "Ref": "PortParameter" },
+                        "TENANT": {"Ref": "TENANT"}
                     }
                 }
             }
         },
         "AddAssetFunction": {
             "Type": "AWS::Lambda::Function",
-            "DependsOn": "RDSInstance",
             "Properties": {
                 "Code": {
                     "S3Bucket": "repair-lneil",
@@ -187,14 +127,14 @@
                         },
                         "PORT": {
                             "Ref": "PortParameter"
-                        }
+                        },
+                        "TENANT": {"Ref": "TENANT"}
                     }
                 }
             }
         },
         "AddEmployeeFunction": {
             "Type": "AWS::Lambda::Function",
-            "DependsOn": "RDSInstance",
             "Properties": {
                 "Code": {
                     "S3Bucket": "repair-lneil",
@@ -232,14 +172,14 @@
                         },
                         "PORT": {
                             "Ref": "PortParameter"
-                        }
+                        },
+                        "TENANT": {"Ref": "TENANT"}
                     }
                 }
             }
         },
         "AddInvoiceFunction": {
             "Type": "AWS::Lambda::Function",
-            "DependsOn": "RDSInstance",
             "Properties": {
                 "Code": {
                     "S3Bucket": "repair-lneil",
@@ -277,14 +217,14 @@
                         },
                         "PORT": {
                             "Ref": "PortParameter"
-                        }
+                        },
+                        "TENANT": {"Ref": "TENANT"}
                     }
                 }
             }
         },
         "AddItemFunction": {
             "Type": "AWS::Lambda::Function",
-            "DependsOn": "RDSInstance",
             "Properties": {
                 "Code": {
                     "S3Bucket": "repair-lneil",
@@ -322,14 +262,14 @@
                         },
                         "PORT": {
                             "Ref": "PortParameter"
-                        }
+                        },
+                        "TENANT": {"Ref": "TENANT"}
                     }
                 }
             }
         },
         "AddStockFunction": {
             "Type": "AWS::Lambda::Function",
-            "DependsOn": "RDSInstance",
             "Properties": {
                 "Code": {
                     "S3Bucket": "repair-lneil",
@@ -367,14 +307,14 @@
                         },
                         "PORT": {
                             "Ref": "PortParameter"
-                        }
+                        },
+                        "TENANT": {"Ref": "TENANT"}
                     }
                 }
             }
         },
         "AddStoreFunction": {
             "Type": "AWS::Lambda::Function",
-            "DependsOn": "RDSInstance",
             "Properties": {
                 "Code": {
                     "S3Bucket": "repair-lneil",
@@ -412,14 +352,14 @@
                         },
                         "PORT": {
                             "Ref": "PortParameter"
-                        }
+                        },
+                        "TENANT": {"Ref": "TENANT"}
                     }
                 }
             }
         },
         "AddTicketFunction": {
             "Type": "AWS::Lambda::Function",
-      "DependsOn": "RDSInstance",
             "Properties": {
                 "Code": {
                     "S3Bucket": "repair-lneil",
@@ -457,14 +397,14 @@
                         },
                         "PORT": {
                             "Ref": "PortParameter"
-                        }
+                        },
+                        "TENANT": {"Ref": "TENANT"}
                     }
                 }
             }
         },
         "QueryFunction": {
             "Type": "AWS::Lambda::Function",
-            "DependsOn": "RDSInstance",
             "Properties": {
                 "Code": {
                     "S3Bucket": "repair-lneil",
@@ -502,30 +442,39 @@
                         },
                         "PORT": {
                             "Ref": "PortParameter"
-                        }
+                        },
+                        "TENANT": {"Ref": "TENANT"}
                     }
                 }
             }
         },
         "ApiGateway": {
-            "Type": "AWS::ApiGateway::RestApi",
-            "Properties": {
+          "Type": "AWS::ApiGateway::RestApi",
+          "Properties": {
               "Name": "MyApiGateway"
-            }
+          }
           },
           "ApiGatewayRootResourceId": {
-            "Type": "AWS::ApiGateway::Resource",
-            "Properties": {
+          "Type": "AWS::ApiGateway::Resource",
+          "Properties": {
               "RestApiId": { "Ref": "ApiGateway" },
               "ParentId": { "Fn::GetAtt": [ "ApiGateway", "RootResourceId" ] },
-              "PathPart": "{proxy+}"
-            }
+              "PathPart": "dev"
+          }
+          },
+          "AddCustomerResource": {
+          "Type": "AWS::ApiGateway::Resource",
+              "Properties": {
+                  "RestApiId": { "Ref": "ApiGateway" },
+                  "ParentId": { "Ref": "ApiGatewayRootResourceId" },
+                  "PathPart": "add-customer"
+              }
           },
           "AddCustomerMethod": {
             "Type": "AWS::ApiGateway::Method",
             "Properties": {
               "RestApiId": { "Ref": "ApiGateway" },
-              "ResourceId": { "Ref": "ApiGatewayRootResourceId" },
+              "ResourceId": { "Ref": "AddCustomerResource" },
               "HttpMethod": "POST",
               "AuthorizationType": "NONE",
               "Integration": {
@@ -537,11 +486,19 @@
               }
             }
           },
+          "AddAssetResource": {
+          "Type": "AWS::ApiGateway::Resource",
+              "Properties": {
+                  "RestApiId": { "Ref": "ApiGateway" },
+                  "ParentId": { "Ref": "ApiGatewayRootResourceId" },
+                  "PathPart": "add-asset"
+              }
+          },
           "AddAssetMethod": {
             "Type": "AWS::ApiGateway::Method",
             "Properties": {
               "RestApiId": { "Ref": "ApiGateway" },
-              "ResourceId": { "Ref": "ApiGatewayRootResourceId" },
+              "ResourceId": { "Ref": "AddAssetResource" },
               "HttpMethod": "POST",
               "AuthorizationType": "NONE",
               "Integration": {
@@ -552,6 +509,14 @@
                 }
               }
             }
+          },
+          "AddEmployeeResource": {
+          "Type": "AWS::ApiGateway::Resource",
+              "Properties": {
+                  "RestApiId": { "Ref": "ApiGateway" },
+                  "ParentId": { "Ref": "ApiGatewayRootResourceId" },
+                  "PathPart": "add-employee"
+              }
           },
           "AddEmployeeMethod": {
             "Type": "AWS::ApiGateway::Method",
@@ -569,11 +534,19 @@
               }
             }
           },
+          "AddInvoiceResource": {
+          "Type": "AWS::ApiGateway::Resource",
+              "Properties": {
+                  "RestApiId": { "Ref": "ApiGateway" },
+                  "ParentId": { "Ref": "ApiGatewayRootResourceId" },
+                  "PathPart": "add-invoice"
+              }
+          },
           "AddInvoiceMethod": {
             "Type": "AWS::ApiGateway::Method",
             "Properties": {
               "RestApiId": { "Ref": "ApiGateway" },
-              "ResourceId": { "Ref": "ApiGatewayRootResourceId" },
+              "ResourceId": { "Ref": "AddInvoiceResource" },
               "HttpMethod": "POST",
               "AuthorizationType": "NONE",
               "Integration": {
@@ -585,11 +558,19 @@
               }
             }
           },
+          "AddItemResource": {
+          "Type": "AWS::ApiGateway::Resource",
+              "Properties": {
+                  "RestApiId": { "Ref": "ApiGateway" },
+                  "ParentId": { "Ref": "ApiGatewayRootResourceId" },
+                  "PathPart": "add-item"
+              }
+          },
           "AddItemMethod": {
             "Type": "AWS::ApiGateway::Method",
             "Properties": {
               "RestApiId": { "Ref": "ApiGateway" },
-              "ResourceId": { "Ref": "ApiGatewayRootResourceId" },
+              "ResourceId": { "Ref": "AddItemResource" },
               "HttpMethod": "POST",
               "AuthorizationType": "NONE",
               "Integration": {
@@ -601,11 +582,19 @@
               }
             }
           },
+          "AddStockResource": {
+          "Type": "AWS::ApiGateway::Resource",
+              "Properties": {
+                  "RestApiId": { "Ref": "ApiGateway" },
+                  "ParentId": { "Ref": "ApiGatewayRootResourceId" },
+                  "PathPart": "add-stock"
+              }
+          },
           "AddStockMethod": {
             "Type": "AWS::ApiGateway::Method",
             "Properties": {
               "RestApiId": { "Ref": "ApiGateway" },
-              "ResourceId": { "Ref": "ApiGatewayRootResourceId" },
+              "ResourceId": { "Ref": "AddStockResource" },
               "HttpMethod": "POST",
               "AuthorizationType": "NONE",
               "Integration": {
@@ -617,11 +606,19 @@
               }
             }
           },
+          "AddStoreResource": {
+          "Type": "AWS::ApiGateway::Resource",
+              "Properties": {
+                  "RestApiId": { "Ref": "ApiGateway" },
+                  "ParentId": { "Ref": "ApiGatewayRootResourceId" },
+                  "PathPart": "add-store"
+              }
+          },
           "AddStoreMethod": {
             "Type": "AWS::ApiGateway::Method",
             "Properties": {
               "RestApiId": { "Ref": "ApiGateway" },
-              "ResourceId": { "Ref": "ApiGatewayRootResourceId" },
+              "ResourceId": { "Ref": "AddStoreResource" },
               "HttpMethod": "POST",
               "AuthorizationType": "NONE",
               "Integration": {
@@ -633,11 +630,19 @@
               }
             }
           },
+          "AddTicketResource": {
+          "Type": "AWS::ApiGateway::Resource",
+              "Properties": {
+                  "RestApiId": { "Ref": "ApiGateway" },
+                  "ParentId": { "Ref": "ApiGatewayRootResourceId" },
+                  "PathPart": "add-ticket"
+              }
+          },
           "AddTicketMethod": {
             "Type": "AWS::ApiGateway::Method",
             "Properties": {
               "RestApiId": { "Ref": "ApiGateway" },
-              "ResourceId": { "Ref": "ApiGatewayRootResourceId" },
+              "ResourceId": { "Ref": "AddTicketResource" },
               "HttpMethod": "POST",
               "AuthorizationType": "NONE",
               "Integration": {
@@ -649,11 +654,19 @@
               }
             }
           },
+          "QueryResource": {
+          "Type": "AWS::ApiGateway::Resource",
+              "Properties": {
+                  "RestApiId": { "Ref": "ApiGateway" },
+                  "ParentId": { "Ref": "ApiGatewayRootResourceId" },
+                  "PathPart": "add-query"
+              }
+          },
           "QueryMethod": {
             "Type": "AWS::ApiGateway::Method",
             "Properties": {
               "RestApiId": { "Ref": "ApiGateway" },
-              "ResourceId": { "Ref": "ApiGatewayRootResourceId" },
+              "ResourceId": { "Ref": "QueryResource" },
               "HttpMethod": "POST",
               "AuthorizationType": "NONE",
               "Integration": {

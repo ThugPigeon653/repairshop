@@ -457,135 +457,319 @@
             "Properties": {
                 "Name": "MyApiGateway"
             }
-        },
-        "ApiGatewayRootResourceId": {
+            },
+            "ApiGatewayRootResourceId": {
             "Type": "AWS::ApiGateway::Resource",
             "Properties": {
                 "RestApiId": { "Ref": "ApiGateway" },
                 "ParentId": { "Fn::GetAtt": [ "ApiGateway", "RootResourceId" ] },
-                "PathPart": "{proxy+}"
+                "PathPart": "dev"
             }
-        },
-        "AddCustomerMethod": {
-            "Type": "AWS::ApiGateway::Method",
-            "Properties": {
+            },
+            "AddCustomerResource": {
+            "Type": "AWS::ApiGateway::Resource",
+                "Properties": {
+                    "RestApiId": { "Ref": "ApiGateway" },
+                    "ParentId": { "Ref": "ApiGatewayRootResourceId" },
+                    "PathPart": "add-customer"
+                }
+            },
+            "AddCustomerMethod": {
+              "Type": "AWS::ApiGateway::Method",
+              "Properties": {
                 "RestApiId": { "Ref": "ApiGateway" },
-                "ResourceId":"AssetMethodd",
+                "ResourceId": { "Ref": "AddCustomerResource" },
                 "HttpMethod": "POST",
                 "AuthorizationType": "NONE",
                 "Integration": {
-                    "Type": "AWS_PROXY",
-                    "IntegrationHttpMethod": "POST",
-                    "Uri": {
-                        "Fn::Sub": "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${AddCustomerFunction.Arn}/invocations"
-                    }
+                  "Type": "AWS_PROXY",
+                  "IntegrationHttpMethod": "POST",
+                  "Uri": {
+                    "Fn::Sub": "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${AddCustomerFunction.Arn}/invocations"
+                  }
                 }
-            }
-        },
-        "AddAssetMethod": {
-            "Type": "AWS::ApiGateway::Method",
-            "Properties": {
+              }
+            },
+            "AddAssetResource": {
+            "Type": "AWS::ApiGateway::Resource",
+                "Properties": {
+                    "RestApiId": { "Ref": "ApiGateway" },
+                    "ParentId": { "Ref": "ApiGatewayRootResourceId" },
+                    "PathPart": "add-asset"
+                }
+            },
+            "AddAssetMethod": {
+              "Type": "AWS::ApiGateway::Method",
+              "Properties": {
+                "RestApiId": { "Ref": "ApiGateway" },
+                "ResourceId": { "Ref": "AddAssetResource" },
+                "HttpMethod": "POST",
+                "AuthorizationType": "NONE",
+                "Integration": {
+                  "Type": "AWS_PROXY",
+                  "IntegrationHttpMethod": "POST",
+                  "Uri": {
+                    "Fn::Sub": "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${AddAssetFunction.Arn}/invocations"
+                  }
+                }
+              }
+            },
+            "AddEmployeeResource": {
+            "Type": "AWS::ApiGateway::Resource",
+                "Properties": {
+                    "RestApiId": { "Ref": "ApiGateway" },
+                    "ParentId": { "Ref": "ApiGatewayRootResourceId" },
+                    "PathPart": "add-employee"
+                }
+            },
+            "AddEmployeeMethod": {
+              "Type": "AWS::ApiGateway::Method",
+              "Properties": {
                 "RestApiId": { "Ref": "ApiGateway" },
                 "ResourceId": { "Ref": "ApiGatewayRootResourceId" },
                 "HttpMethod": "POST",
                 "AuthorizationType": "NONE",
                 "Integration": {
-                    "Type": "AWS_PROXY",
-                    "IntegrationHttpMethod": "POST",
-                    "Uri": {
-                        "Fn::Sub": "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${AddAssetFunction.Arn}/invocations"
-                    }
+                  "Type": "AWS_PROXY",
+                  "IntegrationHttpMethod": "POST",
+                  "Uri": {
+                    "Fn::Sub": "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${AddEmployeeFunction.Arn}/invocations"
+                  }
                 }
-            }
-        },
-        "ApiGatewayDeployment": {
-            "Type": "AWS::ApiGateway::Deployment",
-            "DependsOn": [ "AddCustomerMethod", "AddAssetMethod", "AddEmployeeFunction", "AddInvoiceFunction", "AddItemFunction", "AddStockFunction", "AddStoreFunction", "AddTicketFunction", "QueryFunction" ],
-            "Properties": {
+              }
+            },
+            "AddInvoiceResource": {
+            "Type": "AWS::ApiGateway::Resource",
+                "Properties": {
+                    "RestApiId": { "Ref": "ApiGateway" },
+                    "ParentId": { "Ref": "ApiGatewayRootResourceId" },
+                    "PathPart": "add-invoice"
+                }
+            },
+            "AddInvoiceMethod": {
+              "Type": "AWS::ApiGateway::Method",
+              "Properties": {
+                "RestApiId": { "Ref": "ApiGateway" },
+                "ResourceId": { "Ref": "AddInvoiceResource" },
+                "HttpMethod": "POST",
+                "AuthorizationType": "NONE",
+                "Integration": {
+                  "Type": "AWS_PROXY",
+                  "IntegrationHttpMethod": "POST",
+                  "Uri": {
+                    "Fn::Sub": "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${AddInvoiceFunction.Arn}/invocations"
+                  }
+                }
+              }
+            },
+            "AddItemResource": {
+            "Type": "AWS::ApiGateway::Resource",
+                "Properties": {
+                    "RestApiId": { "Ref": "ApiGateway" },
+                    "ParentId": { "Ref": "ApiGatewayRootResourceId" },
+                    "PathPart": "add-item"
+                }
+            },
+            "AddItemMethod": {
+              "Type": "AWS::ApiGateway::Method",
+              "Properties": {
+                "RestApiId": { "Ref": "ApiGateway" },
+                "ResourceId": { "Ref": "AddItemResource" },
+                "HttpMethod": "POST",
+                "AuthorizationType": "NONE",
+                "Integration": {
+                  "Type": "AWS_PROXY",
+                  "IntegrationHttpMethod": "POST",
+                  "Uri": {
+                    "Fn::Sub": "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${AddItemFunction.Arn}/invocations"
+                  }
+                }
+              }
+            },
+            "AddStockResource": {
+            "Type": "AWS::ApiGateway::Resource",
+                "Properties": {
+                    "RestApiId": { "Ref": "ApiGateway" },
+                    "ParentId": { "Ref": "ApiGatewayRootResourceId" },
+                    "PathPart": "add-stock"
+                }
+            },
+            "AddStockMethod": {
+              "Type": "AWS::ApiGateway::Method",
+              "Properties": {
+                "RestApiId": { "Ref": "ApiGateway" },
+                "ResourceId": { "Ref": "AddStockResource" },
+                "HttpMethod": "POST",
+                "AuthorizationType": "NONE",
+                "Integration": {
+                  "Type": "AWS_PROXY",
+                  "IntegrationHttpMethod": "POST",
+                  "Uri": {
+                    "Fn::Sub": "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${AddStockFunction.Arn}/invocations"
+                  }
+                }
+              }
+            },
+            "AddStoreResource": {
+            "Type": "AWS::ApiGateway::Resource",
+                "Properties": {
+                    "RestApiId": { "Ref": "ApiGateway" },
+                    "ParentId": { "Ref": "ApiGatewayRootResourceId" },
+                    "PathPart": "add-store"
+                }
+            },
+            "AddStoreMethod": {
+              "Type": "AWS::ApiGateway::Method",
+              "Properties": {
+                "RestApiId": { "Ref": "ApiGateway" },
+                "ResourceId": { "Ref": "AddStoreResource" },
+                "HttpMethod": "POST",
+                "AuthorizationType": "NONE",
+                "Integration": {
+                  "Type": "AWS_PROXY",
+                  "IntegrationHttpMethod": "POST",
+                  "Uri": {
+                    "Fn::Sub": "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${AddStoreFunction.Arn}/invocations"
+                  }
+                }
+              }
+            },
+            "AddTicketResource": {
+            "Type": "AWS::ApiGateway::Resource",
+                "Properties": {
+                    "RestApiId": { "Ref": "ApiGateway" },
+                    "ParentId": { "Ref": "ApiGatewayRootResourceId" },
+                    "PathPart": "add-ticket"
+                }
+            },
+            "AddTicketMethod": {
+              "Type": "AWS::ApiGateway::Method",
+              "Properties": {
+                "RestApiId": { "Ref": "ApiGateway" },
+                "ResourceId": { "Ref": "AddTicketResource" },
+                "HttpMethod": "POST",
+                "AuthorizationType": "NONE",
+                "Integration": {
+                  "Type": "AWS_PROXY",
+                  "IntegrationHttpMethod": "POST",
+                  "Uri": {
+                    "Fn::Sub": "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${AddTicketFunction.Arn}/invocations"
+                  }
+                }
+              }
+            },
+            "QueryResource": {
+            "Type": "AWS::ApiGateway::Resource",
+                "Properties": {
+                    "RestApiId": { "Ref": "ApiGateway" },
+                    "ParentId": { "Ref": "ApiGatewayRootResourceId" },
+                    "PathPart": "add-query"
+                }
+            },
+            "QueryMethod": {
+              "Type": "AWS::ApiGateway::Method",
+              "Properties": {
+                "RestApiId": { "Ref": "ApiGateway" },
+                "ResourceId": { "Ref": "QueryResource" },
+                "HttpMethod": "POST",
+                "AuthorizationType": "NONE",
+                "Integration": {
+                  "Type": "AWS_PROXY",
+                  "IntegrationHttpMethod": "POST",
+                  "Uri": {
+                    "Fn::Sub": "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${QueryFunction.Arn}/invocations"
+                  }
+                }
+              }
+            },
+            "ApiGatewayDeployment": {
+              "Type": "AWS::ApiGateway::Deployment",
+              "DependsOn": ["AddCustomerMethod", "AddAssetFunction", "AddEmployeeFunction", "AddInvoiceFunction", "AddItemFunction", "AddStockFunction", "AddStoreFunction", "AddTicketFunction", "QueryFunction"],
+              "Properties": {
                 "RestApiId": { "Ref": "ApiGateway" },
                 "StageName": "prod"
-            }
-        },
-        "LambdaApiGatewayInvokeAddCustomer": {
-            "Type": "AWS::Lambda::Permission",
-            "Properties": {
+              }
+            },
+            "LambdaApiGatewayInvokeAddCustomer": {
+              "Type": "AWS::Lambda::Permission",
+              "Properties": {
                 "Action": "lambda:InvokeFunction",
                 "FunctionName": { "Fn::GetAtt": [ "AddCustomerFunction", "Arn" ] },
                 "Principal": "apigateway.amazonaws.com",
                 "SourceArn": { "Fn::Sub": "arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${ApiGateway}/*" }
-            }
-        },
-        "LambdaApiGatewayInvokeAddAsset": {
-            "Type": "AWS::Lambda::Permission",
-            "Properties": {
+              }
+            },
+            "LambdaApiGatewayInvokeAddAsset": {
+              "Type": "AWS::Lambda::Permission",
+              "Properties": {
                 "Action": "lambda:InvokeFunction",
                 "FunctionName": { "Fn::GetAtt": [ "AddAssetFunction", "Arn" ] },
                 "Principal": "apigateway.amazonaws.com",
                 "SourceArn": { "Fn::Sub": "arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${ApiGateway}/*" }
-            }
-        },
-        "LambdaApiGatewayInvokeAddEmployee": {
-            "Type": "AWS::Lambda::Permission",
-            "Properties": {
+              }
+            },
+            "LambdaApiGatewayInvokeAddEmployee": {
+              "Type": "AWS::Lambda::Permission",
+              "Properties": {
                 "Action": "lambda:InvokeFunction",
                 "FunctionName": { "Fn::GetAtt": [ "AddEmployeeFunction", "Arn" ] },
                 "Principal": "apigateway.amazonaws.com",
                 "SourceArn": { "Fn::Sub": "arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${ApiGateway}/*" }
-            }
-        },
-        "LambdaApiGatewayInvokeAddInvoice": {
-            "Type": "AWS::Lambda::Permission",
-            "Properties": {
+              }
+            },
+            "LambdaApiGatewayInvokeAddInvoice": {
+              "Type": "AWS::Lambda::Permission",
+              "Properties": {
                 "Action": "lambda:InvokeFunction",
                 "FunctionName": { "Fn::GetAtt": [ "AddInvoiceFunction", "Arn" ] },
                 "Principal": "apigateway.amazonaws.com",
                 "SourceArn": { "Fn::Sub": "arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${ApiGateway}/*" }
-            }
-        },
-        "LambdaApiGatewayInvokeAddItem": {
-            "Type": "AWS::Lambda::Permission",
-            "Properties": {
+              }
+            },
+            "LambdaApiGatewayInvokeAddItem": {
+              "Type": "AWS::Lambda::Permission",
+              "Properties": {
                 "Action": "lambda:InvokeFunction",
                 "FunctionName": { "Fn::GetAtt": [ "AddItemFunction", "Arn" ] },
                 "Principal": "apigateway.amazonaws.com",
                 "SourceArn": { "Fn::Sub": "arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${ApiGateway}/*" }
-            }
-        },
-        "LambdaApiGatewayInvokeAddStock": {
-            "Type": "AWS::Lambda::Permission",
-            "Properties": {
+              }
+            },
+            "LambdaApiGatewayInvokeAddStock": {
+              "Type": "AWS::Lambda::Permission",
+              "Properties": {
                 "Action": "lambda:InvokeFunction",
                 "FunctionName": { "Fn::GetAtt": [ "AddStockFunction", "Arn" ] },
                 "Principal": "apigateway.amazonaws.com",
                 "SourceArn": { "Fn::Sub": "arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${ApiGateway}/*" }
-            }
-        },
-        "LambdaApiGatewayInvokeAddStore": {
-            "Type": "AWS::Lambda::Permission",
-            "Properties": {
+              }
+            },
+            "LambdaApiGatewayInvokeAddStore": {
+              "Type": "AWS::Lambda::Permission",
+              "Properties": {
                 "Action": "lambda:InvokeFunction",
                 "FunctionName": { "Fn::GetAtt": [ "AddStoreFunction", "Arn" ] },
                 "Principal": "apigateway.amazonaws.com",
                 "SourceArn": { "Fn::Sub": "arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${ApiGateway}/*" }
-            }
-        },
-        "LambdaApiGatewayInvokeAddTicket": {
-            "Type": "AWS::Lambda::Permission",
-            "Properties": {
+              }
+            },
+            "LambdaApiGatewayInvokeAddTicket": {
+              "Type": "AWS::Lambda::Permission",
+              "Properties": {
                 "Action": "lambda:InvokeFunction",
                 "FunctionName": { "Fn::GetAtt": [ "AddTicketFunction", "Arn" ] },
                 "Principal": "apigateway.amazonaws.com",
                 "SourceArn": { "Fn::Sub": "arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${ApiGateway}/*" }
-            }
-        },
-        "LambdaApiGatewayInvokeQuery": {
-            "Type": "AWS::Lambda::Permission",
-            "Properties": {
+              }
+            },
+            "LambdaApiGatewayInvokeQuery": {
+              "Type": "AWS::Lambda::Permission",
+              "Properties": {
                 "Action": "lambda:InvokeFunction",
                 "FunctionName": { "Fn::GetAtt": [ "QueryFunction", "Arn" ] },
                 "Principal": "apigateway.amazonaws.com",
                 "SourceArn": { "Fn::Sub": "arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${ApiGateway}/*" }
-            }
-        }
-    }
-}
+              }
+            }          
+      }
+  }
