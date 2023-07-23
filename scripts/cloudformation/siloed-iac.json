@@ -1,0 +1,771 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+  "Metadata": {
+    "AWS::CloudFormation::Designer": {
+      "25a04534-7d57-4ad0-b4c8-7cbc5559f033": {
+        "size": {
+          "width": 60,
+          "height": 60
+        },
+        "position": {
+          "x": 260,
+          "y": 80
+        },
+        "z": 1,
+        "embeds": []
+      }
+    }
+  },
+    "Parameters": {
+      "TENANT": {
+        "Type": "String",
+        "Description": "This is a sample parameter for a string value."
+      },
+      "DBParameter": {
+        "Type": "String",
+        "Description": "DB path to ssm",
+        "Default": "/repair/DBParameter"
+      },
+      "UserParameter": {
+        "Type": "String",
+        "Default": "/repair/UserParameter"
+      },
+      "PasswordParameter": {
+        "Type": "String",
+        "Default": "/repair/PasswordParameter"
+      },
+      "HostParameter": {
+        "Type": "String",
+        "Default": "/repair/HostParameter"
+      },
+      "PortParameter": {
+        "Type": "String",
+        "Default": "/repair/PortParameter"
+      }
+    },
+    "Resources": {
+      "InvokeDefineTablesFunction": {
+        "Type": "Custom::InvokeDefineTablesFunction",
+        "Properties": {
+          "ServiceToken": "arn:aws:lambda:ap-southeast-2:286456780400:function:define-tables",
+          "Payload": {
+            "TENANT": {"Ref": "TENANT"}
+          }
+        }
+      },
+        "AddCustomerFunction": {
+            "Type": "AWS::Lambda::Function",
+            "Properties": {
+                "Code": {
+                    "S3Bucket": "repair-lneil",
+                    "S3Key": "add-customer.zip"
+                },
+                "Role": "arn:aws:iam::286456780400:role/service-role/add-customer-role-sxndynrl",
+                "Runtime": "python3.7",
+                "Handler": "add-customer.lambda_handler",
+                "VpcConfig": {
+                    "SubnetIds": [
+                        "subnet-0f7a246f9e06f81d2",
+                        "subnet-0af6145256374ccf3",
+                        "subnet-021c1678adadf3366"
+                    ],
+                    "SecurityGroupIds": [
+                        "sg-0d2971aad7d08fa3f"
+                    ]
+                },
+                "Layers": [
+                    "arn:aws:lambda:ap-southeast-2:286456780400:layer:psycopg2:3"
+                ],
+                "Environment": {
+                    "Variables": {
+                        "DB": { "Ref": "DBParameter" },
+                        "USER": { "Ref": "UserParameter" },
+                        "PASSWORD": { "Ref": "PasswordParameter" },
+                        "HOST": { "Ref": "HostParameter" },
+                        "PORT": { "Ref": "PortParameter" },
+                        "TENANT": {"Ref": "TENANT"}
+                    }
+                }
+            }
+        },
+        "AddAssetFunction": {
+            "Type": "AWS::Lambda::Function",
+            "Properties": {
+                "Code": {
+                    "S3Bucket": "repair-lneil",
+                    "S3Key": "add-asset.zip"
+                },
+                "Role": "arn:aws:iam::286456780400:role/service-role/add-customer-role-sxndynrl",
+                "Runtime": "python3.7",
+                "Handler": "add-asset.lambda_handler",
+                "VpcConfig": {
+                    "SubnetIds": [
+                        "subnet-0f7a246f9e06f81d2",
+                        "subnet-0af6145256374ccf3",
+                        "subnet-021c1678adadf3366"
+                    ],
+                    "SecurityGroupIds": [
+                        "sg-0d2971aad7d08fa3f"
+                    ]
+                },
+                "Layers": [
+                    "arn:aws:lambda:ap-southeast-2:286456780400:layer:psycopg2:3"
+                ],
+                "Environment": {
+                    "Variables": {
+                        "DB": {
+                            "Ref": "DBParameter"
+                        },
+                        "USER": {
+                            "Ref": "UserParameter"
+                        },
+                        "PASSWORD": {
+                            "Ref": "PasswordParameter"
+                        },
+                        "HOST": {
+                            "Ref": "HostParameter"
+                        },
+                        "PORT": {
+                            "Ref": "PortParameter"
+                        },
+                        "TENANT": {"Ref": "TENANT"}
+                    }
+                }
+            }
+        },
+        "AddEmployeeFunction": {
+            "Type": "AWS::Lambda::Function",
+            "Properties": {
+                "Code": {
+                    "S3Bucket": "repair-lneil",
+                    "S3Key": "add-employee.zip"
+                },
+                "Role": "arn:aws:iam::286456780400:role/service-role/add-customer-role-sxndynrl",
+                "Runtime": "python3.7",
+                "Handler": "add-employee.lambda_handler",
+                "VpcConfig": {
+                    "SubnetIds": [
+                        "subnet-0f7a246f9e06f81d2",
+                        "subnet-0af6145256374ccf3",
+                        "subnet-021c1678adadf3366"
+                    ],
+                    "SecurityGroupIds": [
+                        "sg-0d2971aad7d08fa3f"
+                    ]
+                },
+                "Layers": [
+                    "arn:aws:lambda:ap-southeast-2:286456780400:layer:psycopg2:3"
+                ],
+                "Environment": {
+                    "Variables": {
+                        "DB": {
+                            "Ref": "DBParameter"
+                        },
+                        "USER": {
+                            "Ref": "UserParameter"
+                        },
+                        "PASSWORD": {
+                            "Ref": "PasswordParameter"
+                        },
+                        "HOST": {
+                            "Ref": "HostParameter"
+                        },
+                        "PORT": {
+                            "Ref": "PortParameter"
+                        },
+                        "TENANT": {"Ref": "TENANT"}
+                    }
+                }
+            }
+        },
+        "AddInvoiceFunction": {
+            "Type": "AWS::Lambda::Function",
+            "Properties": {
+                "Code": {
+                    "S3Bucket": "repair-lneil",
+                    "S3Key": "add-invoice.zip"
+                },
+                "Role": "arn:aws:iam::286456780400:role/service-role/add-customer-role-sxndynrl",
+                "Runtime": "python3.7",
+                "Handler": "add-invoice.lambda_handler",
+                "VpcConfig": {
+                    "SubnetIds": [
+                        "subnet-0f7a246f9e06f81d2",
+                        "subnet-0af6145256374ccf3",
+                        "subnet-021c1678adadf3366"
+                    ],
+                    "SecurityGroupIds": [
+                        "sg-0d2971aad7d08fa3f"
+                    ]
+                },
+                "Layers": [
+                    "arn:aws:lambda:ap-southeast-2:286456780400:layer:psycopg2:3"
+                ],
+                "Environment": {
+                    "Variables": {
+                        "DB": {
+                            "Ref": "DBParameter"
+                        },
+                        "USER": {
+                            "Ref": "UserParameter"
+                        },
+                        "PASSWORD": {
+                            "Ref": "PasswordParameter"
+                        },
+                        "HOST": {
+                            "Ref": "HostParameter"
+                        },
+                        "PORT": {
+                            "Ref": "PortParameter"
+                        },
+                        "TENANT": {"Ref": "TENANT"}
+                    }
+                }
+            }
+        },
+        "AddItemFunction": {
+            "Type": "AWS::Lambda::Function",
+            "Properties": {
+                "Code": {
+                    "S3Bucket": "repair-lneil",
+                    "S3Key": "add-item.zip"
+                },
+                "Role": "arn:aws:iam::286456780400:role/service-role/add-customer-role-sxndynrl",
+                "Runtime": "python3.7",
+                "Handler": "add-item.lambda_handler",
+                "VpcConfig": {
+                    "SubnetIds": [
+                        "subnet-0f7a246f9e06f81d2",
+                        "subnet-0af6145256374ccf3",
+                        "subnet-021c1678adadf3366"
+                    ],
+                    "SecurityGroupIds": [
+                        "sg-0d2971aad7d08fa3f"
+                    ]
+                },
+                "Layers": [
+                    "arn:aws:lambda:ap-southeast-2:286456780400:layer:psycopg2:3"
+                ],
+                "Environment": {
+                    "Variables": {
+                        "DB": {
+                            "Ref": "DBParameter"
+                        },
+                        "USER": {
+                            "Ref": "UserParameter"
+                        },
+                        "PASSWORD": {
+                            "Ref": "PasswordParameter"
+                        },
+                        "HOST": {
+                            "Ref": "HostParameter"
+                        },
+                        "PORT": {
+                            "Ref": "PortParameter"
+                        },
+                        "TENANT": {"Ref": "TENANT"}
+                    }
+                }
+            }
+        },
+        "AddStockFunction": {
+            "Type": "AWS::Lambda::Function",
+            "Properties": {
+                "Code": {
+                    "S3Bucket": "repair-lneil",
+                    "S3Key": "add-stock.zip"
+                },
+                "Role": "arn:aws:iam::286456780400:role/service-role/add-customer-role-sxndynrl",
+                "Runtime": "python3.7",
+                "Handler": "add-stock.lambda_handler",
+                "VpcConfig": {
+                    "SubnetIds": [
+                        "subnet-0f7a246f9e06f81d2",
+                        "subnet-0af6145256374ccf3",
+                        "subnet-021c1678adadf3366"
+                    ],
+                    "SecurityGroupIds": [
+                        "sg-0d2971aad7d08fa3f"
+                    ]
+                },
+                "Layers": [
+                    "arn:aws:lambda:ap-southeast-2:286456780400:layer:psycopg2:3"
+                ],
+                "Environment": {
+                    "Variables": {
+                        "DB": {
+                            "Ref": "DBParameter"
+                        },
+                        "USER": {
+                            "Ref": "UserParameter"
+                        },
+                        "PASSWORD": {
+                            "Ref": "PasswordParameter"
+                        },
+                        "HOST": {
+                            "Ref": "HostParameter"
+                        },
+                        "PORT": {
+                            "Ref": "PortParameter"
+                        },
+                        "TENANT": {"Ref": "TENANT"}
+                    }
+                }
+            }
+        },
+        "AddStoreFunction": {
+            "Type": "AWS::Lambda::Function",
+            "Properties": {
+                "Code": {
+                    "S3Bucket": "repair-lneil",
+                    "S3Key": "add-store.zip"
+                },
+                "Role": "arn:aws:iam::286456780400:role/service-role/add-customer-role-sxndynrl",
+                "Runtime": "python3.7",
+                "Handler": "add-store.lambda_handler",
+                "VpcConfig": {
+                    "SubnetIds": [
+                        "subnet-0f7a246f9e06f81d2",
+                        "subnet-0af6145256374ccf3",
+                        "subnet-021c1678adadf3366"
+                    ],
+                    "SecurityGroupIds": [
+                        "sg-0d2971aad7d08fa3f"
+                    ]
+                },
+                "Layers": [
+                    "arn:aws:lambda:ap-southeast-2:286456780400:layer:psycopg2:3"
+                ],
+                "Environment": {
+                    "Variables": {
+                        "DB": {
+                            "Ref": "DBParameter"
+                        },
+                        "USER": {
+                            "Ref": "UserParameter"
+                        },
+                        "PASSWORD": {
+                            "Ref": "PasswordParameter"
+                        },
+                        "HOST": {
+                            "Ref": "HostParameter"
+                        },
+                        "PORT": {
+                            "Ref": "PortParameter"
+                        },
+                        "TENANT": {"Ref": "TENANT"}
+                    }
+                }
+            }
+        },
+        "AddTicketFunction": {
+            "Type": "AWS::Lambda::Function",
+            "Properties": {
+                "Code": {
+                    "S3Bucket": "repair-lneil",
+                    "S3Key": "add-ticket.zip"
+                },
+                "Role": "arn:aws:iam::286456780400:role/service-role/add-customer-role-sxndynrl",
+                "Runtime": "python3.7",
+                "Handler": "add-ticket.lambda_handler",
+                "VpcConfig": {
+                    "SubnetIds": [
+                        "subnet-0f7a246f9e06f81d2",
+                        "subnet-0af6145256374ccf3",
+                        "subnet-021c1678adadf3366"
+                    ],
+                    "SecurityGroupIds": [
+                        "sg-0d2971aad7d08fa3f"
+                    ]
+                },
+                "Layers": [
+                    "arn:aws:lambda:ap-southeast-2:286456780400:layer:psycopg2:3"
+                ],
+                "Environment": {
+                    "Variables": {
+                        "DB": {
+                            "Ref": "DBParameter"
+                        },
+                        "USER": {
+                            "Ref": "UserParameter"
+                        },
+                        "PASSWORD": {
+                            "Ref": "PasswordParameter"
+                        },
+                        "HOST": {
+                            "Ref": "HostParameter"
+                        },
+                        "PORT": {
+                            "Ref": "PortParameter"
+                        },
+                        "TENANT": {"Ref": "TENANT"}
+                    }
+                }
+            }
+        },
+        "QueryFunction": {
+            "Type": "AWS::Lambda::Function",
+            "Properties": {
+                "Code": {
+                    "S3Bucket": "repair-lneil",
+                    "S3Key": "query.zip"
+                },
+                "Role": "arn:aws:iam::286456780400:role/service-role/add-customer-role-sxndynrl",
+                "Runtime": "python3.7",
+                "Handler": "query.lambda_handler",
+                "VpcConfig": {
+                    "SubnetIds": [
+                        "subnet-0f7a246f9e06f81d2",
+                        "subnet-0af6145256374ccf3",
+                        "subnet-021c1678adadf3366"
+                    ],
+                    "SecurityGroupIds": [
+                        "sg-0d2971aad7d08fa3f"
+                    ]
+                },
+                "Layers": [
+                    "arn:aws:lambda:ap-southeast-2:286456780400:layer:psycopg2:3"
+                ],
+                "Environment": {
+                    "Variables": {
+                        "DB": {
+                            "Ref": "DBParameter"
+                        },
+                        "USER": {
+                            "Ref": "UserParameter"
+                        },
+                        "PASSWORD": {
+                            "Ref": "PasswordParameter"
+                        },
+                        "HOST": {
+                            "Ref": "HostParameter"
+                        },
+                        "PORT": {
+                            "Ref": "PortParameter"
+                        },
+                        "TENANT": {"Ref": "TENANT"}
+                    }
+                }
+            }
+        },
+        "ApiGateway": {
+          "Type": "AWS::ApiGateway::RestApi",
+          "Properties": {
+              "Name": "MyApiGateway"
+          }
+          },
+          "ApiGatewayRootResourceId": {
+          "Type": "AWS::ApiGateway::Resource",
+          "Properties": {
+              "RestApiId": { "Ref": "ApiGateway" },
+              "ParentId": { "Fn::GetAtt": [ "ApiGateway", "RootResourceId" ] },
+              "PathPart": "dev"
+          }
+          },
+          "AddCustomerResource": {
+          "Type": "AWS::ApiGateway::Resource",
+              "Properties": {
+                  "RestApiId": { "Ref": "ApiGateway" },
+                  "ParentId": { "Ref": "ApiGatewayRootResourceId" },
+                  "PathPart": "add-customer"
+              }
+          },
+          "AddCustomerMethod": {
+            "Type": "AWS::ApiGateway::Method",
+            "Properties": {
+              "RestApiId": { "Ref": "ApiGateway" },
+              "ResourceId": { "Ref": "AddCustomerResource" },
+              "HttpMethod": "POST",
+              "AuthorizationType": "NONE",
+              "Integration": {
+                "Type": "AWS_PROXY",
+                "IntegrationHttpMethod": "POST",
+                "Uri": {
+                  "Fn::Sub": "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${AddCustomerFunction.Arn}/invocations"
+                }
+              }
+            }
+          },
+          "AddAssetResource": {
+          "Type": "AWS::ApiGateway::Resource",
+              "Properties": {
+                  "RestApiId": { "Ref": "ApiGateway" },
+                  "ParentId": { "Ref": "ApiGatewayRootResourceId" },
+                  "PathPart": "add-asset"
+              }
+          },
+          "AddAssetMethod": {
+            "Type": "AWS::ApiGateway::Method",
+            "Properties": {
+              "RestApiId": { "Ref": "ApiGateway" },
+              "ResourceId": { "Ref": "AddAssetResource" },
+              "HttpMethod": "POST",
+              "AuthorizationType": "NONE",
+              "Integration": {
+                "Type": "AWS_PROXY",
+                "IntegrationHttpMethod": "POST",
+                "Uri": {
+                  "Fn::Sub": "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${AddAssetFunction.Arn}/invocations"
+                }
+              }
+            }
+          },
+          "AddEmployeeResource": {
+          "Type": "AWS::ApiGateway::Resource",
+              "Properties": {
+                  "RestApiId": { "Ref": "ApiGateway" },
+                  "ParentId": { "Ref": "ApiGatewayRootResourceId" },
+                  "PathPart": "add-employee"
+              }
+          },
+          "AddEmployeeMethod": {
+            "Type": "AWS::ApiGateway::Method",
+            "Properties": {
+              "RestApiId": { "Ref": "ApiGateway" },
+              "ResourceId": { "Ref": "ApiGatewayRootResourceId" },
+              "HttpMethod": "POST",
+              "AuthorizationType": "NONE",
+              "Integration": {
+                "Type": "AWS_PROXY",
+                "IntegrationHttpMethod": "POST",
+                "Uri": {
+                  "Fn::Sub": "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${AddEmployeeFunction.Arn}/invocations"
+                }
+              }
+            }
+          },
+          "AddInvoiceResource": {
+          "Type": "AWS::ApiGateway::Resource",
+              "Properties": {
+                  "RestApiId": { "Ref": "ApiGateway" },
+                  "ParentId": { "Ref": "ApiGatewayRootResourceId" },
+                  "PathPart": "add-invoice"
+              }
+          },
+          "AddInvoiceMethod": {
+            "Type": "AWS::ApiGateway::Method",
+            "Properties": {
+              "RestApiId": { "Ref": "ApiGateway" },
+              "ResourceId": { "Ref": "AddInvoiceResource" },
+              "HttpMethod": "POST",
+              "AuthorizationType": "NONE",
+              "Integration": {
+                "Type": "AWS_PROXY",
+                "IntegrationHttpMethod": "POST",
+                "Uri": {
+                  "Fn::Sub": "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${AddInvoiceFunction.Arn}/invocations"
+                }
+              }
+            }
+          },
+          "AddItemResource": {
+          "Type": "AWS::ApiGateway::Resource",
+              "Properties": {
+                  "RestApiId": { "Ref": "ApiGateway" },
+                  "ParentId": { "Ref": "ApiGatewayRootResourceId" },
+                  "PathPart": "add-item"
+              }
+          },
+          "AddItemMethod": {
+            "Type": "AWS::ApiGateway::Method",
+            "Properties": {
+              "RestApiId": { "Ref": "ApiGateway" },
+              "ResourceId": { "Ref": "AddItemResource" },
+              "HttpMethod": "POST",
+              "AuthorizationType": "NONE",
+              "Integration": {
+                "Type": "AWS_PROXY",
+                "IntegrationHttpMethod": "POST",
+                "Uri": {
+                  "Fn::Sub": "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${AddItemFunction.Arn}/invocations"
+                }
+              }
+            }
+          },
+          "AddStockResource": {
+          "Type": "AWS::ApiGateway::Resource",
+              "Properties": {
+                  "RestApiId": { "Ref": "ApiGateway" },
+                  "ParentId": { "Ref": "ApiGatewayRootResourceId" },
+                  "PathPart": "add-stock"
+              }
+          },
+          "AddStockMethod": {
+            "Type": "AWS::ApiGateway::Method",
+            "Properties": {
+              "RestApiId": { "Ref": "ApiGateway" },
+              "ResourceId": { "Ref": "AddStockResource" },
+              "HttpMethod": "POST",
+              "AuthorizationType": "NONE",
+              "Integration": {
+                "Type": "AWS_PROXY",
+                "IntegrationHttpMethod": "POST",
+                "Uri": {
+                  "Fn::Sub": "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${AddStockFunction.Arn}/invocations"
+                }
+              }
+            }
+          },
+          "AddStoreResource": {
+          "Type": "AWS::ApiGateway::Resource",
+              "Properties": {
+                  "RestApiId": { "Ref": "ApiGateway" },
+                  "ParentId": { "Ref": "ApiGatewayRootResourceId" },
+                  "PathPart": "add-store"
+              }
+          },
+          "AddStoreMethod": {
+            "Type": "AWS::ApiGateway::Method",
+            "Properties": {
+              "RestApiId": { "Ref": "ApiGateway" },
+              "ResourceId": { "Ref": "AddStoreResource" },
+              "HttpMethod": "POST",
+              "AuthorizationType": "NONE",
+              "Integration": {
+                "Type": "AWS_PROXY",
+                "IntegrationHttpMethod": "POST",
+                "Uri": {
+                  "Fn::Sub": "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${AddStoreFunction.Arn}/invocations"
+                }
+              }
+            }
+          },
+          "AddTicketResource": {
+          "Type": "AWS::ApiGateway::Resource",
+              "Properties": {
+                  "RestApiId": { "Ref": "ApiGateway" },
+                  "ParentId": { "Ref": "ApiGatewayRootResourceId" },
+                  "PathPart": "add-ticket"
+              }
+          },
+          "AddTicketMethod": {
+            "Type": "AWS::ApiGateway::Method",
+            "Properties": {
+              "RestApiId": { "Ref": "ApiGateway" },
+              "ResourceId": { "Ref": "AddTicketResource" },
+              "HttpMethod": "POST",
+              "AuthorizationType": "NONE",
+              "Integration": {
+                "Type": "AWS_PROXY",
+                "IntegrationHttpMethod": "POST",
+                "Uri": {
+                  "Fn::Sub": "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${AddTicketFunction.Arn}/invocations"
+                }
+              }
+            }
+          },
+          "QueryResource": {
+          "Type": "AWS::ApiGateway::Resource",
+              "Properties": {
+                  "RestApiId": { "Ref": "ApiGateway" },
+                  "ParentId": { "Ref": "ApiGatewayRootResourceId" },
+                  "PathPart": "add-query"
+              }
+          },
+          "QueryMethod": {
+            "Type": "AWS::ApiGateway::Method",
+            "Properties": {
+              "RestApiId": { "Ref": "ApiGateway" },
+              "ResourceId": { "Ref": "QueryResource" },
+              "HttpMethod": "POST",
+              "AuthorizationType": "NONE",
+              "Integration": {
+                "Type": "AWS_PROXY",
+                "IntegrationHttpMethod": "POST",
+                "Uri": {
+                  "Fn::Sub": "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${QueryFunction.Arn}/invocations"
+                }
+              }
+            }
+          },
+          "ApiGatewayDeployment": {
+            "Type": "AWS::ApiGateway::Deployment",
+            "DependsOn": ["AddCustomerMethod", "AddAssetFunction", "AddEmployeeFunction", "AddInvoiceFunction", "AddItemFunction", "AddStockFunction", "AddStoreFunction", "AddTicketFunction", "QueryFunction"],
+            "Properties": {
+              "RestApiId": { "Ref": "ApiGateway" },
+              "StageName": "prod"
+            }
+          },
+          "LambdaApiGatewayInvokeAddCustomer": {
+            "Type": "AWS::Lambda::Permission",
+            "Properties": {
+              "Action": "lambda:InvokeFunction",
+              "FunctionName": { "Fn::GetAtt": [ "AddCustomerFunction", "Arn" ] },
+              "Principal": "apigateway.amazonaws.com",
+              "SourceArn": { "Fn::Sub": "arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${ApiGateway}/*" }
+            }
+          },
+          "LambdaApiGatewayInvokeAddAsset": {
+            "Type": "AWS::Lambda::Permission",
+            "Properties": {
+              "Action": "lambda:InvokeFunction",
+              "FunctionName": { "Fn::GetAtt": [ "AddAssetFunction", "Arn" ] },
+              "Principal": "apigateway.amazonaws.com",
+              "SourceArn": { "Fn::Sub": "arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${ApiGateway}/*" }
+            }
+          },
+          "LambdaApiGatewayInvokeAddEmployee": {
+            "Type": "AWS::Lambda::Permission",
+            "Properties": {
+              "Action": "lambda:InvokeFunction",
+              "FunctionName": { "Fn::GetAtt": [ "AddEmployeeFunction", "Arn" ] },
+              "Principal": "apigateway.amazonaws.com",
+              "SourceArn": { "Fn::Sub": "arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${ApiGateway}/*" }
+            }
+          },
+          "LambdaApiGatewayInvokeAddInvoice": {
+            "Type": "AWS::Lambda::Permission",
+            "Properties": {
+              "Action": "lambda:InvokeFunction",
+              "FunctionName": { "Fn::GetAtt": [ "AddInvoiceFunction", "Arn" ] },
+              "Principal": "apigateway.amazonaws.com",
+              "SourceArn": { "Fn::Sub": "arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${ApiGateway}/*" }
+            }
+          },
+          "LambdaApiGatewayInvokeAddItem": {
+            "Type": "AWS::Lambda::Permission",
+            "Properties": {
+              "Action": "lambda:InvokeFunction",
+              "FunctionName": { "Fn::GetAtt": [ "AddItemFunction", "Arn" ] },
+              "Principal": "apigateway.amazonaws.com",
+              "SourceArn": { "Fn::Sub": "arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${ApiGateway}/*" }
+            }
+          },
+          "LambdaApiGatewayInvokeAddStock": {
+            "Type": "AWS::Lambda::Permission",
+            "Properties": {
+              "Action": "lambda:InvokeFunction",
+              "FunctionName": { "Fn::GetAtt": [ "AddStockFunction", "Arn" ] },
+              "Principal": "apigateway.amazonaws.com",
+              "SourceArn": { "Fn::Sub": "arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${ApiGateway}/*" }
+            }
+          },
+          "LambdaApiGatewayInvokeAddStore": {
+            "Type": "AWS::Lambda::Permission",
+            "Properties": {
+              "Action": "lambda:InvokeFunction",
+              "FunctionName": { "Fn::GetAtt": [ "AddStoreFunction", "Arn" ] },
+              "Principal": "apigateway.amazonaws.com",
+              "SourceArn": { "Fn::Sub": "arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${ApiGateway}/*" }
+            }
+          },
+          "LambdaApiGatewayInvokeAddTicket": {
+            "Type": "AWS::Lambda::Permission",
+            "Properties": {
+              "Action": "lambda:InvokeFunction",
+              "FunctionName": { "Fn::GetAtt": [ "AddTicketFunction", "Arn" ] },
+              "Principal": "apigateway.amazonaws.com",
+              "SourceArn": { "Fn::Sub": "arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${ApiGateway}/*" }
+            }
+          },
+          "LambdaApiGatewayInvokeQuery": {
+            "Type": "AWS::Lambda::Permission",
+            "Properties": {
+              "Action": "lambda:InvokeFunction",
+              "FunctionName": { "Fn::GetAtt": [ "QueryFunction", "Arn" ] },
+              "Principal": "apigateway.amazonaws.com",
+              "SourceArn": { "Fn::Sub": "arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${ApiGateway}/*" }
+            }
+          }          
+    }
+}
