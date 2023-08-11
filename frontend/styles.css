@@ -1,105 +1,131 @@
 body {
-    font-family: Arial, sans-serif;
-    margin: 0;
-    padding: 0;
-  }
-  
-  header {
-    background-color: #007bff;
-    color: #fff;
-    padding: 10px;
-  }
-  
-  nav ul {
-    list-style-type: none;
-    padding: 0;
-    margin: 0;
-  }
-  
-  nav ul li {
-    display: inline;
-    margin-right: 10px;
-  }
-  
-  nav ul li a {
-    color: #fff;
-    text-decoration: none;
-  }
-  
-  main {
-    padding: 20px;
-  }
-  
-  .container {
-    max-width: 800px;
-    margin: 0 auto;
-    padding: 20px;
-  }
+  font-family: Arial, sans-serif;
+  margin: 0;
+  padding: 0;
+  overflow-y: scroll;
+}
 
+header {
+  background-color: #007bff;
+  color: #fff;
+  padding: 10px;
+}
 
-  h1 {
-    margin-top: 0;
-  }
-  
-  form {
-    margin-bottom: 20px;
-  }
-  
-  .form-group {
-    margin-bottom: 10px;
-  }
-  
-  label {
-    display: block;
-    font-weight: bold;
-  }
-  
-  input[type="text"] {
-    width: 100%;
-    padding: 5px;
-    border: 1px solid #ccc;
-    border-radius: 4px;
-  }
+nav ul {
+  list-style-type: none;
+  padding: 0;
+  margin: 0;
+}
 
-  .form-group {
-    margin-bottom: 10px;
+.right-align {
+  margin-left: 260px;
+}
+
+nav {
+  zoom: 1;
+}
+
+nav ul li {
+  display: inline;
+  margin-right: 10px;
+}
+
+nav ul li a {
+  color: #fff;
+  text-decoration: none;
+}
+
+main {
+  padding: 20px;
+}
+
+.container {
+  max-width: 1200px; /* Increase the container width to fit both search and results containers */
+  margin: 0 auto;
+  padding: 20px;
+  display:flex;
+}
+
+.search-container {
+  flex: 1; 
+  padding-right: 20px;
+  border-right: 1px solid #ccc;
+}
+
+.results-container {
+  flex: 1; /* Take up 50% of the container width */
+  padding-left: 10px;
+}
+
+h1 {
+  margin-top: 0;
+}
+
+form {
+  margin-bottom: 20px;
+}
+
+.form-group {
+  margin-bottom: 10px;
+}
+
+label {
+  display: block;
+  font-weight: bold;
+}
+
+input[type="text"] {
+  width: 100%;
+  padding: 5px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
+
+button[type="submit"] {
+  padding: 5px 10px;
+  background-color: #4CAF50;
+  color: white;
+  border: none;
+  cursor: pointer;
+}
+
+#search-fields {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+}
+
+#search-fields .form-group {
+  flex-basis: calc(50% - 10px);
+}
+
+@media screen and (max-width: 768px) {
+  #search-fields .form-group {
+    flex-basis: 100%;
   }
-  label {
-    display: block;
-    margin-bottom: 5px;
-  }
-  input[type="text"] {
-    width: 200px;
-    padding: 5px;
-  }
-  button[type="submit"] {
-    padding: 5px 10px;
-    background-color: #4CAF50;
-    color: white;
-    border: none;
-    cursor: pointer;
-  }
-  #search-results {
-    margin-top: 20px;
-    border: 1px solid #ccc;
-    padding: 10px;
-  }
-  
-  button[type="submit"] {
-    background-color: #007bff;
-    color: #fff;
-    border: none;
-    padding: 10px 20px;
-    font-size: 14px;
-    cursor: pointer;
-  }
-  
-  #search-results {
-    margin-top: 20px;
-  }
-  
-  footer {
-    background-color: #f8f9fa;
-    padding: 10px;
-    text-align: center;
-  }
+}
+
+#search-results {
+  margin-top: 20px;
+  border: 1px solid #ccc;
+  padding: 10px;
+}
+
+button[type="submit"] {
+  background-color: #007bff;
+  color: #fff;
+  border: none;
+  padding: 10px 20px;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+#search-results {
+  margin-top: 20px;
+}
+
+footer {
+  background-color: #f8f9fa;
+  padding: 10px;
+  text-align: center;
+}

@@ -1,58 +1,220 @@
 {
-  "AWSTemplateFormatVersion": "2010-09-09",
-  "Metadata": {
-    "AWS::CloudFormation::Designer": {
-      "25a04534-7d57-4ad0-b4c8-7cbc5559f033": {
-        "size": {
-          "width": 60,
-          "height": 60
-        },
-        "position": {
-          "x": 260,
-          "y": 80
-        },
-        "z": 1,
-        "embeds": []
-      }
-    }
-  },
+    "AWSTemplateFormatVersion": "2010-09-09",
+    "Metadata": {
+        "AWS::CloudFormation::Designer": {
+            "25a04534-7d57-4ad0-b4c8-7cbc5559f033": {
+                "size": {
+                    "width": 60,
+                    "height": 60
+                },
+                "position": {
+                    "x": 260,
+                    "y": 80
+                },
+                "z": 1,
+                "embeds": []
+            }
+        }
+    },
     "Parameters": {
-      "TENANT": {
-        "Type": "String",
-        "Description": "This is a sample parameter for a string value."
-      },
-      "DBParameter": {
-        "Type": "String",
-        "Description": "DB path to ssm",
-        "Default": "/repair/DBParameter"
-      },
-      "UserParameter": {
-        "Type": "String",
-        "Default": "/repair/UserParameter"
-      },
-      "PasswordParameter": {
-        "Type": "String",
-        "Default": "/repair/PasswordParameter"
-      },
-      "HostParameter": {
-        "Type": "String",
-        "Default": "/repair/HostParameter"
-      },
-      "PortParameter": {
-        "Type": "String",
-        "Default": "/repair/PortParameter"
-      }
+        "TENANT": {
+            "Type": "String",
+            "Description": "This is a sample parameter for a string value."
+        },
+        "DBParameter": {
+            "Type": "String",
+            "Description": "DB path to ssm",
+            "Default": "/repair/DBParameter"
+        },
+        "UserParameter": {
+            "Type": "String",
+            "Default": "/repair/UserParameter"
+        },
+        "PasswordParameter": {
+            "Type": "String",
+            "Default": "/repair/PasswordParameter"
+        },
+        "HostParameter": {
+            "Type": "String",
+            "Default": "/repair/HostParameter"
+        },
+        "PortParameter": {
+            "Type": "String",
+            "Default": "/repair/PortParameter"
+        },
+        "CognitoDomain": {
+            "Type": "String",
+            "MinLength": 3,
+            "MaxLength": 63,
+            "AllowedPattern": "^[a-z0-9](?:[a-z0-9\\-]{0,61}[a-z0-9])?$",
+            "Description": "repairshop-lneil",
+            "Default": "repairshop-lneil"
+        }
     },
     "Resources": {
-      "InvokeDefineTablesFunction": {
-        "Type": "Custom::InvokeDefineTablesFunction",
-        "Properties": {
-          "ServiceToken": "arn:aws:lambda:ap-southeast-2:286456780400:function:define-tables",
-          "Payload": {
-            "TENANT": {"Ref": "TENANT"}
-          }
-        }
-      },
+        "UserSSMParameter": {
+            "Type": "AWS::SSM::Parameter",
+            "Properties": {
+                "Name": { "Ref": "UserParameter" },
+                "Description": "This is my SSM parameter",
+                "Type": "String",
+                "Value": "lachieneilsen"
+            }
+        },
+        "PasswordSSMParameter": {
+            "Type": "AWS::SSM::Parameter",
+            "Properties": {
+                "Name": { "Ref": "PasswordParameter" },
+                "Description": "This is another SSM parameter",
+                "Type": "String",
+                "Value": "satan111"
+            }
+        },
+        "PortSSMParameter": {
+            "Type": "AWS::SSM::Parameter",
+            "Properties": {
+                "Name": { "Ref": "PortParameter" },
+                "Description": "This is the SSM parameter for the port",
+                "Type": "String",
+                "Value": "5432"
+            }
+        },
+        "DBSSMParameter": {
+            "Type": "AWS::SSM::Parameter",
+            "Properties": {
+                "Name": { "Ref": "DBParameter" },
+                "Description": "This is the SSM parameter for the port",
+                "Type": "String",
+                "Value": "repairshop"
+            }
+        },
+        "UserPool": {
+            "Type": "AWS::Cognito::UserPool",
+            "Properties": {
+                "UserPoolName": "MyUserPool",
+                "Policies": {
+                    "PasswordPolicy": {
+                        "MinimumLength": 8,
+                        "RequireUppercase": true,
+                        "RequireLowercase": true,
+                        "RequireNumbers": true,
+                        "RequireSymbols": false
+                    }
+                },
+                "Schema": [
+                    {
+                        "Name": "username",
+                        "AttributeDataType": "String"
+                    },
+                    {
+                        "Name": "email",
+                        "AttributeDataType": "String"
+                    }
+                ],
+                "UsernameConfiguration": {
+                    "CaseSensitive": false
+                },
+                "AutoVerifiedAttributes": [ "email" ],
+                "VerificationMessageTemplate": {
+                    "EmailSubject": "Verify your email for our awesome app!",
+                    "EmailMessage": "Please click the link below to verify your email address. {####}"
+                }
+            }
+        },
+        "MasterGroup": {
+            "Type": "AWS::Cognito::UserPoolGroup",
+            "Properties": {
+                "GroupName": "Master",
+                "UserPoolId": { "Ref": "UserPool" }
+            }
+        },
+        "UsersGroup": {
+            "Type": "AWS::Cognito::UserPoolGroup",
+            "Properties": {
+                "GroupName": "Users",
+                "UserPoolId": { "Ref": "UserPool" }
+            }
+        },
+        "MasterPolicy": {
+            "Type": "AWS::IAM::ManagedPolicy",
+            "Properties": {
+                "PolicyDocument": {
+                    "Version": "2012-10-17",
+                    "Statement": [
+                        {
+                            "Effect": "Allow",
+                            "Action": "sts:AssumeRole",
+                            "Resource": { "Fn::GetAtt": [ "MasterRole", "Arn" ] }
+                        }
+                    ]
+                },
+                "Roles": [ { "Ref": "MasterRole" } ]
+            }
+        },
+        "MasterRole": {
+            "Type": "AWS::IAM::Role",
+            "Properties": {
+                "AssumeRolePolicyDocument": {
+                    "Version": "2012-10-17",
+                    "Statement": [
+                        {
+                            "Effect": "Allow",
+                            "Principal": {
+                                "Service": "cognito-idp.amazonaws.com"
+                            },
+                            "Action": "sts:AssumeRoleWithWebIdentity"
+                        }
+                    ]
+                }
+            }
+        },
+        "UserPoolDomain": {
+            "Type": "AWS::Cognito::UserPoolDomain",
+            "Properties": {
+                "Domain": { "Ref": "CognitoDomain" },
+                "UserPoolId": { "Ref": "UserPool" }
+            }
+        },
+        "UserPoolClient": {
+            "Type": "AWS::Cognito::UserPoolClient",
+            "Properties": {
+                "UserPoolId": { "Ref": "UserPool" },
+                "AllowedOAuthFlowsUserPoolClient": true,
+                "AllowedOAuthFlows": [ "code", "implicit" ],
+                "AllowedOAuthScopes": [
+                    "phone",
+                    "email",
+                    "openid",
+                    "profile"
+                ],
+                "CallbackURLs": [ "https://repair-frontend.s3.ap-southeast-2.amazonaws.com/index.html" ],
+                "SupportedIdentityProviders": [ "COGNITO" ],
+                "ExplicitAuthFlows": [ "ALLOW_USER_PASSWORD_AUTH", "ALLOW_USER_SRP_AUTH", "ALLOW_REFRESH_TOKEN_AUTH" ]
+            }
+        },
+        "MyDBInstance": {
+            "Type": "AWS::RDS::DBInstance",
+            "Properties": {
+                "DBInstanceIdentifier": "repairshop",
+                "DBInstanceClass": "db.t3.micro",
+                "Engine": "postgres",
+                "EngineVersion": "14.7",
+                "AllocatedStorage": "20",
+                "DBName": { "Fn::Sub": "${DBSSMParameter.Value}" },
+                "MasterUsername": { "Fn::Sub": "${UserSSMParameter.Value}" },
+                "MasterUserPassword": { "Fn::Sub": "${PasswordSSMParameter.Value}" },
+                "DeletionProtection": false
+            }
+        },
+        "HostSSMParameter": {
+            "Type": "AWS::SSM::Parameter",
+            "Properties": {
+                "Name": { "Ref": "HostParameter" },
+                "Description": "This is the SSM parameter for the host",
+                "Type": "String",
+                "Value": { "Fn::GetAtt": [ "MyDBInstance", "Endpoint.Address" ] }
+            }
+        },
         "AddCustomerFunction": {
             "Type": "AWS::Lambda::Function",
             "Properties": {
@@ -83,7 +245,7 @@
                         "PASSWORD": { "Ref": "PasswordParameter" },
                         "HOST": { "Ref": "HostParameter" },
                         "PORT": { "Ref": "PortParameter" },
-                        "TENANT": {"Ref": "TENANT"}
+                        "TENANT": { "Ref": "TENANT" }
                     }
                 }
             }
@@ -128,7 +290,7 @@
                         "PORT": {
                             "Ref": "PortParameter"
                         },
-                        "TENANT": {"Ref": "TENANT"}
+                        "TENANT": { "Ref": "TENANT" }
                     }
                 }
             }
@@ -173,7 +335,7 @@
                         "PORT": {
                             "Ref": "PortParameter"
                         },
-                        "TENANT": {"Ref": "TENANT"}
+                        "TENANT": { "Ref": "TENANT" }
                     }
                 }
             }
@@ -218,7 +380,7 @@
                         "PORT": {
                             "Ref": "PortParameter"
                         },
-                        "TENANT": {"Ref": "TENANT"}
+                        "TENANT": { "Ref": "TENANT" }
                     }
                 }
             }
@@ -263,7 +425,7 @@
                         "PORT": {
                             "Ref": "PortParameter"
                         },
-                        "TENANT": {"Ref": "TENANT"}
+                        "TENANT": { "Ref": "TENANT" }
                     }
                 }
             }
@@ -308,7 +470,7 @@
                         "PORT": {
                             "Ref": "PortParameter"
                         },
-                        "TENANT": {"Ref": "TENANT"}
+                        "TENANT": { "Ref": "TENANT" }
                     }
                 }
             }
@@ -353,7 +515,7 @@
                         "PORT": {
                             "Ref": "PortParameter"
                         },
-                        "TENANT": {"Ref": "TENANT"}
+                        "TENANT": { "Ref": "TENANT" }
                     }
                 }
             }
@@ -398,7 +560,7 @@
                         "PORT": {
                             "Ref": "PortParameter"
                         },
-                        "TENANT": {"Ref": "TENANT"}
+                        "TENANT": { "Ref": "TENANT" }
                     }
                 }
             }
@@ -443,329 +605,372 @@
                         "PORT": {
                             "Ref": "PortParameter"
                         },
-                        "TENANT": {"Ref": "TENANT"}
+                        "TENANT": { "Ref": "TENANT" }
                     }
                 }
             }
         },
         "ApiGateway": {
-          "Type": "AWS::ApiGateway::RestApi",
-          "Properties": {
-              "Name": "MyApiGateway"
-          }
-          },
-          "ApiGatewayRootResourceId": {
-          "Type": "AWS::ApiGateway::Resource",
-          "Properties": {
-              "RestApiId": { "Ref": "ApiGateway" },
-              "ParentId": { "Fn::GetAtt": [ "ApiGateway", "RootResourceId" ] },
-              "PathPart": "dev"
-          }
-          },
-          "AddCustomerResource": {
-          "Type": "AWS::ApiGateway::Resource",
-              "Properties": {
-                  "RestApiId": { "Ref": "ApiGateway" },
-                  "ParentId": { "Ref": "ApiGatewayRootResourceId" },
-                  "PathPart": "add-customer"
-              }
-          },
-          "AddCustomerMethod": {
+            "Type": "AWS::ApiGateway::RestApi",
+            "Properties": {
+                "Name": "ApiGateway"
+            }
+        },
+        "ApiGatewayCognitoAuthorizer": {
+            "Type": "AWS::ApiGateway::Authorizer",
+            "Properties": {
+                "Name": "CognitoAuthorizer",
+                "RestApiId": { "Ref": "ApiGateway" },
+                "Type": "COGNITO_USER_POOLS",
+                "ProviderARNs": [
+                    { "Fn::GetAtt": [ "UserPool", "Arn" ] }
+                ],
+                "IdentitySource": "method.request.header.Authorization"
+            }
+        },
+        "ApiGatewayRootResourceId": {
+            "Type": "AWS::ApiGateway::Resource",
+            "Properties": {
+                "RestApiId": { "Ref": "ApiGateway" },
+                "ParentId": { "Fn::GetAtt": [ "ApiGateway", "RootResourceId" ] },
+                "PathPart": "dev",
+                "Cors": {
+                    "AllowMethods": "'OPTIONS,POST,GET,DELETE,PUT'",
+                    "AllowHeaders": "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token'",
+                    "AllowOrigin": "'*'",
+                    "AllowCredentials": "'false'"
+                }
+            }
+        },
+        "AddCustomerResource": {
+            "Type": "AWS::ApiGateway::Resource",
+            "Properties": {
+                "RestApiId": { "Ref": "ApiGateway" },
+                "ParentId": { "Ref": "ApiGatewayRootResourceId" },
+                "PathPart": "add-customer"
+            }
+        },
+        "AddCustomerMethod": {
             "Type": "AWS::ApiGateway::Method",
             "Properties": {
-              "RestApiId": { "Ref": "ApiGateway" },
-              "ResourceId": { "Ref": "AddCustomerResource" },
-              "HttpMethod": "POST",
-              "AuthorizationType": "NONE",
-              "Integration": {
-                "Type": "AWS_PROXY",
-                "IntegrationHttpMethod": "POST",
-                "Uri": {
-                  "Fn::Sub": "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${AddCustomerFunction.Arn}/invocations"
+                "RestApiId": { "Ref": "ApiGateway" },
+                "ResourceId": { "Ref": "AddCustomerResource" },
+                "HttpMethod": "POST",
+                "AuthorizationType": "COGNITO_USER_POOLS",
+                "AuthorizerId": { "Ref": "ApiGatewayCognitoAuthorizer" },
+                "Integration": {
+                    "Type": "AWS_PROXY",
+                    "IntegrationHttpMethod": "POST",
+                    "Uri": {
+                        "Fn::Sub": "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${AddCustomerFunction.Arn}/invocations"
+                    }
                 }
-              }
             }
-          },
-          "AddAssetResource": {
-          "Type": "AWS::ApiGateway::Resource",
-              "Properties": {
-                  "RestApiId": { "Ref": "ApiGateway" },
-                  "ParentId": { "Ref": "ApiGatewayRootResourceId" },
-                  "PathPart": "add-asset"
-              }
-          },
-          "AddAssetMethod": {
+        },
+        "AddAssetResource": {
+            "Type": "AWS::ApiGateway::Resource",
+            "Properties": {
+                "RestApiId": { "Ref": "ApiGateway" },
+                "ParentId": { "Ref": "ApiGatewayRootResourceId" },
+                "PathPart": "add-asset"
+            }
+        },
+        "AddAssetMethod": {
             "Type": "AWS::ApiGateway::Method",
             "Properties": {
-              "RestApiId": { "Ref": "ApiGateway" },
-              "ResourceId": { "Ref": "AddAssetResource" },
-              "HttpMethod": "POST",
-              "AuthorizationType": "NONE",
-              "Integration": {
-                "Type": "AWS_PROXY",
-                "IntegrationHttpMethod": "POST",
-                "Uri": {
-                  "Fn::Sub": "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${AddAssetFunction.Arn}/invocations"
+                "RestApiId": { "Ref": "ApiGateway" },
+                "ResourceId": { "Ref": "AddAssetResource" },
+                "HttpMethod": "POST",
+                "AuthorizationType": "COGNITO_USER_POOLS",
+                "AuthorizerId": { "Ref": "ApiGatewayCognitoAuthorizer" },
+                "Integration": {
+                    "Type": "AWS_PROXY",
+                    "IntegrationHttpMethod": "POST",
+                    "Uri": {
+                        "Fn::Sub": "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${AddAssetFunction.Arn}/invocations"
+                    }
                 }
-              }
             }
-          },
-          "AddEmployeeResource": {
-          "Type": "AWS::ApiGateway::Resource",
-              "Properties": {
-                  "RestApiId": { "Ref": "ApiGateway" },
-                  "ParentId": { "Ref": "ApiGatewayRootResourceId" },
-                  "PathPart": "add-employee"
-              }
-          },
-          "AddEmployeeMethod": {
+        },
+        "AddEmployeeResource": {
+            "Type": "AWS::ApiGateway::Resource",
+            "Properties": {
+                "RestApiId": { "Ref": "ApiGateway" },
+                "ParentId": { "Ref": "ApiGatewayRootResourceId" },
+                "PathPart": "add-employee"
+            }
+        },
+        "AddEmployeeMethod": {
             "Type": "AWS::ApiGateway::Method",
             "Properties": {
-              "RestApiId": { "Ref": "ApiGateway" },
-              "ResourceId": { "Ref": "ApiGatewayRootResourceId" },
-              "HttpMethod": "POST",
-              "AuthorizationType": "NONE",
-              "Integration": {
-                "Type": "AWS_PROXY",
-                "IntegrationHttpMethod": "POST",
-                "Uri": {
-                  "Fn::Sub": "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${AddEmployeeFunction.Arn}/invocations"
+                "RestApiId": { "Ref": "ApiGateway" },
+                "ResourceId": { "Ref": "AddEmployeeResource" },
+                "HttpMethod": "POST",
+                "AuthorizationType": "COGNITO_USER_POOLS",
+                "AuthorizerId": { "Ref": "ApiGatewayCognitoAuthorizer" },
+                "Integration": {
+                    "Type": "AWS_PROXY",
+                    "IntegrationHttpMethod": "POST",
+                    "Uri": {
+                        "Fn::Sub": "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${AddEmployeeFunction.Arn}/invocations"
+                    }
                 }
-              }
             }
-          },
-          "AddInvoiceResource": {
-          "Type": "AWS::ApiGateway::Resource",
-              "Properties": {
-                  "RestApiId": { "Ref": "ApiGateway" },
-                  "ParentId": { "Ref": "ApiGatewayRootResourceId" },
-                  "PathPart": "add-invoice"
-              }
-          },
-          "AddInvoiceMethod": {
+        },
+        "AddInvoiceResource": {
+            "Type": "AWS::ApiGateway::Resource",
+            "Properties": {
+                "RestApiId": { "Ref": "ApiGateway" },
+                "ParentId": { "Ref": "ApiGatewayRootResourceId" },
+                "PathPart": "add-invoice"
+            }
+        },
+        "AddInvoiceMethod": {
             "Type": "AWS::ApiGateway::Method",
             "Properties": {
-              "RestApiId": { "Ref": "ApiGateway" },
-              "ResourceId": { "Ref": "AddInvoiceResource" },
-              "HttpMethod": "POST",
-              "AuthorizationType": "NONE",
-              "Integration": {
-                "Type": "AWS_PROXY",
-                "IntegrationHttpMethod": "POST",
-                "Uri": {
-                  "Fn::Sub": "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${AddInvoiceFunction.Arn}/invocations"
+                "RestApiId": { "Ref": "ApiGateway" },
+                "ResourceId": { "Ref": "AddInvoiceResource" },
+                "HttpMethod": "POST",
+                "AuthorizationType": "COGNITO_USER_POOLS",
+                "AuthorizerId": { "Ref": "ApiGatewayCognitoAuthorizer" },
+                "Integration": {
+                    "Type": "AWS_PROXY",
+                    "IntegrationHttpMethod": "POST",
+                    "Uri": {
+                        "Fn::Sub": "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${AddInvoiceFunction.Arn}/invocations"
+                    }
                 }
-              }
             }
-          },
-          "AddItemResource": {
-          "Type": "AWS::ApiGateway::Resource",
-              "Properties": {
-                  "RestApiId": { "Ref": "ApiGateway" },
-                  "ParentId": { "Ref": "ApiGatewayRootResourceId" },
-                  "PathPart": "add-item"
-              }
-          },
-          "AddItemMethod": {
+        },
+        "AddItemResource": {
+            "Type": "AWS::ApiGateway::Resource",
+            "Properties": {
+                "RestApiId": { "Ref": "ApiGateway" },
+                "ParentId": { "Ref": "ApiGatewayRootResourceId" },
+                "PathPart": "add-item"
+            }
+        },
+        "AddItemMethod": {
             "Type": "AWS::ApiGateway::Method",
             "Properties": {
-              "RestApiId": { "Ref": "ApiGateway" },
-              "ResourceId": { "Ref": "AddItemResource" },
-              "HttpMethod": "POST",
-              "AuthorizationType": "NONE",
-              "Integration": {
-                "Type": "AWS_PROXY",
-                "IntegrationHttpMethod": "POST",
-                "Uri": {
-                  "Fn::Sub": "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${AddItemFunction.Arn}/invocations"
+                "RestApiId": { "Ref": "ApiGateway" },
+                "ResourceId": { "Ref": "AddItemResource" },
+                "HttpMethod": "POST",
+                "AuthorizationType": "COGNITO_USER_POOLS",
+                "AuthorizerId": { "Ref": "ApiGatewayCognitoAuthorizer" },
+                "Integration": {
+                    "Type": "AWS_PROXY",
+                    "IntegrationHttpMethod": "POST",
+                    "Uri": {
+                        "Fn::Sub": "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${AddItemFunction.Arn}/invocations"
+                    }
                 }
-              }
             }
-          },
-          "AddStockResource": {
-          "Type": "AWS::ApiGateway::Resource",
-              "Properties": {
-                  "RestApiId": { "Ref": "ApiGateway" },
-                  "ParentId": { "Ref": "ApiGatewayRootResourceId" },
-                  "PathPart": "add-stock"
-              }
-          },
-          "AddStockMethod": {
+        },
+        "AddStockResource": {
+            "Type": "AWS::ApiGateway::Resource",
+            "Properties": {
+                "RestApiId": { "Ref": "ApiGateway" },
+                "ParentId": { "Ref": "ApiGatewayRootResourceId" },
+                "PathPart": "add-stock"
+            }
+        },
+        "AddStockMethod": {
             "Type": "AWS::ApiGateway::Method",
             "Properties": {
-              "RestApiId": { "Ref": "ApiGateway" },
-              "ResourceId": { "Ref": "AddStockResource" },
-              "HttpMethod": "POST",
-              "AuthorizationType": "NONE",
-              "Integration": {
-                "Type": "AWS_PROXY",
-                "IntegrationHttpMethod": "POST",
-                "Uri": {
-                  "Fn::Sub": "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${AddStockFunction.Arn}/invocations"
+                "RestApiId": { "Ref": "ApiGateway" },
+                "ResourceId": { "Ref": "AddStockResource" },
+                "HttpMethod": "POST",
+                "AuthorizationType": "COGNITO_USER_POOLS",
+                "AuthorizerId": { "Ref": "ApiGatewayCognitoAuthorizer" },
+                "Integration": {
+                    "Type": "AWS_PROXY",
+                    "IntegrationHttpMethod": "POST",
+                    "Uri": {
+                        "Fn::Sub": "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${AddStockFunction.Arn}/invocations"
+                    }
                 }
-              }
             }
-          },
-          "AddStoreResource": {
-          "Type": "AWS::ApiGateway::Resource",
-              "Properties": {
-                  "RestApiId": { "Ref": "ApiGateway" },
-                  "ParentId": { "Ref": "ApiGatewayRootResourceId" },
-                  "PathPart": "add-store"
-              }
-          },
-          "AddStoreMethod": {
+        },
+        "AddStoreResource": {
+            "Type": "AWS::ApiGateway::Resource",
+            "Properties": {
+                "RestApiId": { "Ref": "ApiGateway" },
+                "ParentId": { "Ref": "ApiGatewayRootResourceId" },
+                "PathPart": "add-store"
+            }
+        },
+        "AddStoreMethod": {
             "Type": "AWS::ApiGateway::Method",
             "Properties": {
-              "RestApiId": { "Ref": "ApiGateway" },
-              "ResourceId": { "Ref": "AddStoreResource" },
-              "HttpMethod": "POST",
-              "AuthorizationType": "NONE",
-              "Integration": {
-                "Type": "AWS_PROXY",
-                "IntegrationHttpMethod": "POST",
-                "Uri": {
-                  "Fn::Sub": "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${AddStoreFunction.Arn}/invocations"
+                "RestApiId": { "Ref": "ApiGateway" },
+                "ResourceId": { "Ref": "AddStoreResource" },
+                "HttpMethod": "POST",
+                "AuthorizationType": "COGNITO_USER_POOLS",
+                "AuthorizerId": { "Ref": "ApiGatewayCognitoAuthorizer" },
+                "Integration": {
+                    "Type": "AWS_PROXY",
+                    "IntegrationHttpMethod": "POST",
+                    "Uri": {
+                        "Fn::Sub": "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${AddStoreFunction.Arn}/invocations"
+                    }
                 }
-              }
             }
-          },
-          "AddTicketResource": {
-          "Type": "AWS::ApiGateway::Resource",
-              "Properties": {
-                  "RestApiId": { "Ref": "ApiGateway" },
-                  "ParentId": { "Ref": "ApiGatewayRootResourceId" },
-                  "PathPart": "add-ticket"
-              }
-          },
-          "AddTicketMethod": {
+        },
+        "AddTicketResource": {
+            "Type": "AWS::ApiGateway::Resource",
+            "Properties": {
+                "RestApiId": { "Ref": "ApiGateway" },
+                "ParentId": { "Ref": "ApiGatewayRootResourceId" },
+                "PathPart": "add-ticket"
+            }
+        },
+        "AddTicketMethod": {
             "Type": "AWS::ApiGateway::Method",
             "Properties": {
-              "RestApiId": { "Ref": "ApiGateway" },
-              "ResourceId": { "Ref": "AddTicketResource" },
-              "HttpMethod": "POST",
-              "AuthorizationType": "NONE",
-              "Integration": {
-                "Type": "AWS_PROXY",
-                "IntegrationHttpMethod": "POST",
-                "Uri": {
-                  "Fn::Sub": "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${AddTicketFunction.Arn}/invocations"
+                "RestApiId": { "Ref": "ApiGateway" },
+                "ResourceId": { "Ref": "AddTicketResource" },
+                "HttpMethod": "POST",
+                "AuthorizationType": "COGNITO_USER_POOLS",
+                "AuthorizerId": { "Ref": "ApiGatewayCognitoAuthorizer" },
+                "Integration": {
+                    "Type": "AWS_PROXY",
+                    "IntegrationHttpMethod": "POST",
+                    "Uri": {
+                        "Fn::Sub": "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${AddTicketFunction.Arn}/invocations"
+                    }
                 }
-              }
             }
-          },
-          "QueryResource": {
-          "Type": "AWS::ApiGateway::Resource",
-              "Properties": {
-                  "RestApiId": { "Ref": "ApiGateway" },
-                  "ParentId": { "Ref": "ApiGatewayRootResourceId" },
-                  "PathPart": "add-query"
-              }
-          },
-          "QueryMethod": {
+        },
+        "QueryResource": {
+            "Type": "AWS::ApiGateway::Resource",
+            "Properties": {
+                "RestApiId": { "Ref": "ApiGateway" },
+                "ParentId": { "Ref": "ApiGatewayRootResourceId" },
+                "PathPart": "add-query"
+            }
+        },
+        "QueryMethod": {
             "Type": "AWS::ApiGateway::Method",
             "Properties": {
-              "RestApiId": { "Ref": "ApiGateway" },
-              "ResourceId": { "Ref": "QueryResource" },
-              "HttpMethod": "POST",
-              "AuthorizationType": "NONE",
-              "Integration": {
-                "Type": "AWS_PROXY",
-                "IntegrationHttpMethod": "POST",
-                "Uri": {
-                  "Fn::Sub": "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${QueryFunction.Arn}/invocations"
+                "RestApiId": { "Ref": "ApiGateway" },
+                "ResourceId": { "Ref": "QueryResource" },
+                "HttpMethod": "POST",
+                "AuthorizationType": "COGNITO_USER_POOLS",
+                "AuthorizerId": { "Ref": "ApiGatewayCognitoAuthorizer" },
+                "Integration": {
+                    "Type": "AWS_PROXY",
+                    "IntegrationHttpMethod": "POST",
+                    "Uri": {
+                        "Fn::Sub": "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${QueryFunction.Arn}/invocations"
+                    }
                 }
-              }
             }
-          },
-          "ApiGatewayDeployment": {
+        },
+        "ApiGatewayDeployment": {
             "Type": "AWS::ApiGateway::Deployment",
-            "DependsOn": ["AddCustomerMethod", "AddAssetFunction", "AddEmployeeFunction", "AddInvoiceFunction", "AddItemFunction", "AddStockFunction", "AddStoreFunction", "AddTicketFunction", "QueryFunction"],
+            "DependsOn": [ "AddCustomerMethod", "AddAssetFunction", "AddEmployeeFunction", "AddInvoiceFunction", "AddItemFunction", "AddStockFunction", "AddStoreFunction", "AddTicketFunction", "QueryFunction" ],
             "Properties": {
-              "RestApiId": { "Ref": "ApiGateway" },
-              "StageName": "prod"
+                "RestApiId": { "Ref": "ApiGateway" },
+                "StageName": "prod"
             }
-          },
-          "LambdaApiGatewayInvokeAddCustomer": {
+        },
+        "LambdaApiGatewayInvokeAddCustomer": {
             "Type": "AWS::Lambda::Permission",
             "Properties": {
-              "Action": "lambda:InvokeFunction",
-              "FunctionName": { "Fn::GetAtt": [ "AddCustomerFunction", "Arn" ] },
-              "Principal": "apigateway.amazonaws.com",
-              "SourceArn": { "Fn::Sub": "arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${ApiGateway}/*" }
+                "Action": "lambda:InvokeFunction",
+                "FunctionName": { "Fn::GetAtt": [ "AddCustomerFunction", "Arn" ] },
+                "Principal": "apigateway.amazonaws.com",
+                "SourceArn": { "Fn::Sub": "arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${ApiGateway}/*" }
             }
-          },
-          "LambdaApiGatewayInvokeAddAsset": {
+        },
+        "LambdaApiGatewayInvokeAddAsset": {
             "Type": "AWS::Lambda::Permission",
             "Properties": {
-              "Action": "lambda:InvokeFunction",
-              "FunctionName": { "Fn::GetAtt": [ "AddAssetFunction", "Arn" ] },
-              "Principal": "apigateway.amazonaws.com",
-              "SourceArn": { "Fn::Sub": "arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${ApiGateway}/*" }
+                "Action": "lambda:InvokeFunction",
+                "FunctionName": { "Fn::GetAtt": [ "AddAssetFunction", "Arn" ] },
+                "Principal": "apigateway.amazonaws.com",
+                "SourceArn": { "Fn::Sub": "arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${ApiGateway}/*" }
             }
-          },
-          "LambdaApiGatewayInvokeAddEmployee": {
+        },
+        "LambdaApiGatewayInvokeAddEmployee": {
             "Type": "AWS::Lambda::Permission",
             "Properties": {
-              "Action": "lambda:InvokeFunction",
-              "FunctionName": { "Fn::GetAtt": [ "AddEmployeeFunction", "Arn" ] },
-              "Principal": "apigateway.amazonaws.com",
-              "SourceArn": { "Fn::Sub": "arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${ApiGateway}/*" }
+                "Action": "lambda:InvokeFunction",
+                "FunctionName": { "Fn::GetAtt": [ "AddEmployeeFunction", "Arn" ] },
+                "Principal": "apigateway.amazonaws.com",
+                "SourceArn": { "Fn::Sub": "arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${ApiGateway}/*" }
             }
-          },
-          "LambdaApiGatewayInvokeAddInvoice": {
+        },
+        "LambdaApiGatewayInvokeAddInvoice": {
             "Type": "AWS::Lambda::Permission",
             "Properties": {
-              "Action": "lambda:InvokeFunction",
-              "FunctionName": { "Fn::GetAtt": [ "AddInvoiceFunction", "Arn" ] },
-              "Principal": "apigateway.amazonaws.com",
-              "SourceArn": { "Fn::Sub": "arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${ApiGateway}/*" }
+                "Action": "lambda:InvokeFunction",
+                "FunctionName": { "Fn::GetAtt": [ "AddInvoiceFunction", "Arn" ] },
+                "Principal": "apigateway.amazonaws.com",
+                "SourceArn": { "Fn::Sub": "arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${ApiGateway}/*" }
             }
-          },
-          "LambdaApiGatewayInvokeAddItem": {
+        },
+        "LambdaApiGatewayInvokeAddItem": {
             "Type": "AWS::Lambda::Permission",
             "Properties": {
-              "Action": "lambda:InvokeFunction",
-              "FunctionName": { "Fn::GetAtt": [ "AddItemFunction", "Arn" ] },
-              "Principal": "apigateway.amazonaws.com",
-              "SourceArn": { "Fn::Sub": "arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${ApiGateway}/*" }
+                "Action": "lambda:InvokeFunction",
+                "FunctionName": { "Fn::GetAtt": [ "AddItemFunction", "Arn" ] },
+                "Principal": "apigateway.amazonaws.com",
+                "SourceArn": { "Fn::Sub": "arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${ApiGateway}/*" }
             }
-          },
-          "LambdaApiGatewayInvokeAddStock": {
+        },
+        "LambdaApiGatewayInvokeAddStock": {
             "Type": "AWS::Lambda::Permission",
             "Properties": {
-              "Action": "lambda:InvokeFunction",
-              "FunctionName": { "Fn::GetAtt": [ "AddStockFunction", "Arn" ] },
-              "Principal": "apigateway.amazonaws.com",
-              "SourceArn": { "Fn::Sub": "arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${ApiGateway}/*" }
+                "Action": "lambda:InvokeFunction",
+                "FunctionName": { "Fn::GetAtt": [ "AddStockFunction", "Arn" ] },
+                "Principal": "apigateway.amazonaws.com",
+                "SourceArn": { "Fn::Sub": "arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${ApiGateway}/*" }
             }
-          },
-          "LambdaApiGatewayInvokeAddStore": {
+        },
+        "LambdaApiGatewayInvokeAddStore": {
             "Type": "AWS::Lambda::Permission",
             "Properties": {
-              "Action": "lambda:InvokeFunction",
-              "FunctionName": { "Fn::GetAtt": [ "AddStoreFunction", "Arn" ] },
-              "Principal": "apigateway.amazonaws.com",
-              "SourceArn": { "Fn::Sub": "arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${ApiGateway}/*" }
+                "Action": "lambda:InvokeFunction",
+                "FunctionName": { "Fn::GetAtt": [ "AddStoreFunction", "Arn" ] },
+                "Principal": "apigateway.amazonaws.com",
+                "SourceArn": { "Fn::Sub": "arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${ApiGateway}/*" }
             }
-          },
-          "LambdaApiGatewayInvokeAddTicket": {
+        },
+        "LambdaApiGatewayInvokeAddTicket": {
             "Type": "AWS::Lambda::Permission",
             "Properties": {
-              "Action": "lambda:InvokeFunction",
-              "FunctionName": { "Fn::GetAtt": [ "AddTicketFunction", "Arn" ] },
-              "Principal": "apigateway.amazonaws.com",
-              "SourceArn": { "Fn::Sub": "arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${ApiGateway}/*" }
+                "Action": "lambda:InvokeFunction",
+                "FunctionName": { "Fn::GetAtt": [ "AddTicketFunction", "Arn" ] },
+                "Principal": "apigateway.amazonaws.com",
+                "SourceArn": { "Fn::Sub": "arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${ApiGateway}/*" }
             }
-          },
-          "LambdaApiGatewayInvokeQuery": {
+        },
+        "LambdaApiGatewayInvokeQuery": {
             "Type": "AWS::Lambda::Permission",
             "Properties": {
-              "Action": "lambda:InvokeFunction",
-              "FunctionName": { "Fn::GetAtt": [ "QueryFunction", "Arn" ] },
-              "Principal": "apigateway.amazonaws.com",
-              "SourceArn": { "Fn::Sub": "arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${ApiGateway}/*" }
+                "Action": "lambda:InvokeFunction",
+                "FunctionName": { "Fn::GetAtt": [ "QueryFunction", "Arn" ] },
+                "Principal": "apigateway.amazonaws.com",
+                "SourceArn": { "Fn::Sub": "arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${ApiGateway}/*" }
             }
-          }          
+        }
+    },
+    "Outputs": {
+        "CognitoUserPoolID": {
+            "Value": { "Ref": "UserPool" },
+            "Description": "The UserPool ID"
+        },
+        "CognitoAppClientID": {
+            "Value": { "Ref": "UserPoolClient" },
+            "Description": "The app client"
+        },
+        "HostedUIURL": {
+            "Value": {
+                "Fn::Sub": "https://repair-frontend.s3.ap-southeast-2.amazonaws.com/index.html"
+            },
+            "Description": "The hosted UI URL"
+        }
     }
 }

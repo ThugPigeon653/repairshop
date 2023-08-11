@@ -1,36 +1,85 @@
 {
     "AWSTemplateFormatVersion": "2010-09-09",
-    "Metadata": {
-        "AWS::CloudFormation::Designer": {
-            "25a04534-7d57-4ad0-b4c8-7cbc5559f033": {
-                "size": {
-                    "width": 60,
-                    "height": 60
-                },
-                "position": {
-                    "x": 260,
-                    "y": 80
-                },
-                "z": 1,
-                "embeds": []
-            }
-        }
-    },
-    "Parameters": {
-        "TENANT": {
-            "Type": "String",
-            "Description": "This is a sample parameter for a string value."
-        }
-    },
-        "Resources": {
-            "InvokeDefineTablesFunction": {
-                "Type": "AWS::CloudFormation::CustomResource",
-                "Properties": {
-                    "ServiceToken": "arn:aws:lambda:ap-southeast-2:286456780400:function:test",
-                    "Payload": {
-                        "TENANT": { "Ref": "TENANT" }
+    "Resources": {
+        "UserPool": {
+            "Type": "AWS::Cognito::UserPool",
+            "Properties": {
+                "UserPoolName": "MyUserPool",
+                "Policies": {
+                    "PasswordPolicy": {
+                        "MinimumLength": 8,
+                        "RequireUppercase": true,
+                        "RequireLowercase": true,
+                        "RequireNumbers": true,
+                        "RequireSymbols": false
                     }
+                },
+                "Schema": [
+                    {
+                        "Name": "username",
+                        "AttributeDataType": "String"
+                    },
+                    {
+                        "Name": "email",
+                        "AttributeDataType": "String"
+                    }
+                ]
+            }
+        },
+        "AdminsGroup": {
+            "Type": "AWS::Cognito::UserPoolGroup",
+            "Properties": {
+                "GroupName": "AdminsGroup",
+                "UserPoolId": { "Ref": "UserPool" }
+            }
+        },
+        "UsersGroup": {
+            "Type": "AWS::Cognito::UserPoolGroup",
+            "Properties": {
+                "GroupName": "Users",
+                "UserPoolId": { "Ref": "UserPool" }
+            }
+        },
+        "AdminsPolicy": {
+            "Type": "AWS::IAM::ManagedPolicy",
+            "Properties": {
+                "PolicyDocument": {
+                    "Version": "2012-10-17",
+                    "Statement": [
+                        {
+                            "Effect": "Allow",
+                            "Action": "sts:AssumeRole",
+                            "Resource": { "Fn::GetAtt": [ "AdminsRole", "Arn" ] }
+                        }
+                    ]
+                },
+                "Groups": [ { "Ref": "AdminsGroup" } ]
+            }
+        },
+        "AdminsRole": {
+            "Type": "AWS::IAM::Role",
+            "Properties": {
+                "AssumeRolePolicyDocument": {
+                    "Version": "2012-10-17",
+                    "Statement": [
+                        {
+                            "Effect": "Allow",
+                            "Principal": {
+                                "Service": "cognito-idp.amazonaws.com"
+                            },
+                            "Action": "sts:AssumeRoleWithWebIdentity",
+                            "Condition": {
+                                "StringEquals": {
+                                    "cognito-identity.amazonaws.com:aud": { "Ref": "UserPool" }
+                                },
+                                "ForAnyValue:StringLike": {
+                                    "cognito-identity.amazonaws.com:amr": "authenticated"
+                                }
+                            }
+                        }
+                    ]
                 }
             }
         }
     }
+}

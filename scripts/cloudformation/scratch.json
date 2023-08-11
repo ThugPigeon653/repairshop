@@ -1,0 +1,18 @@
+{
+    "RootUserPolicy": {
+        "Type": "AWS::IAM::ManagedPolicy",
+        "Properties": {
+            "PolicyDocument": {
+                "Version": "2012-10-17",
+                "Statement": [
+                    {
+                        "Effect": "Allow",
+                        "Action": "cognito-idp:AdminAddUserToGroup",
+                        "Resource": "*"
+                    }
+                ]
+            },
+            "Groups": [ { "Ref": "RootUserGroup" } ]
+        }
+    }
+}
