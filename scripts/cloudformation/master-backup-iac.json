@@ -42,6 +42,18 @@
         "Type": "String",
         "Default": "/repair/PortParameter"
         },
+        "UserPoolIdParameter": {
+        "Type": "String",
+        "Default": "/repair/UserPoolIdParameter"
+        },
+        "AppClientIdParameter": {
+        "Type": "String",
+        "Default": "/repair/AppClientIdParameter"
+        },        
+        "ApiEndpointParameter": {
+            "Type": "String",
+            "Default": "/repair/ApiEndpointParameter"
+            },
         "CognitoDomain": {
             "Type": "String",
             "MinLength": 3,
@@ -52,6 +64,19 @@
         }
     },
     "Resources": {
+        "SsmVpcEndpoint": {
+            "Type": "AWS::EC2::VPCEndpoint",
+            "Properties": {
+              "ServiceName": "com.amazonaws.ap-southeast-2.ssm",
+              "VpcId": "vpc-0e374d23662af34be",
+              "SubnetIds": [
+                "subnet-0f7a246f9e06f81d2", 
+                "subnet-0af6145256374ccf3", 
+                "subnet-021c1678adadf3366"
+              ],
+              "SecurityGroupIds": ["sg-0c4a09ccfe5dc9b4e"]
+            }
+        },
         "UserSSMParameter": {
             "Type": "AWS::SSM::Parameter",
             "Properties": {
@@ -190,6 +215,24 @@
                 "CallbackURLs": [ "https://repair-frontend.s3.ap-southeast-2.amazonaws.com/index.html" ],
                 "SupportedIdentityProviders": [ "COGNITO" ],
                 "ExplicitAuthFlows": [ "ALLOW_USER_PASSWORD_AUTH", "ALLOW_USER_SRP_AUTH", "ALLOW_REFRESH_TOKEN_AUTH" ]
+            }
+        },
+        "UserPoolIdSSMParameter": {
+            "Type": "AWS::SSM::Parameter",
+            "Properties": {
+                "Name": { "Ref": "UserPoolIdParameter" },
+                "Description": "This is the SSM parameter for the port",
+                "Type": "String",
+                "Value": { "Ref": "UserPool" }
+            }
+        },
+        "AppClientIdSSMParameter": {
+            "Type": "AWS::SSM::Parameter",
+            "Properties": {
+                "Name": { "Ref": "AppClientIdParameter" },
+                "Description": "This is the SSM parameter for the port",
+                "Type": "String",
+                "Value": { "Ref": "UserPoolClient" }
             }
         },
         "MyDBInstance": {
@@ -470,7 +513,9 @@
                         "PORT": {
                             "Ref": "PortParameter"
                         },
-                        "TENANT": { "Ref": "TENANT" }
+                        "TENANT": { 
+                            "Ref": "TENANT" 
+                        }
                     }
                 }
             }
@@ -608,6 +653,28 @@
                         "TENANT": { "Ref": "TENANT" }
                     }
                 }
+            }
+        },
+        "GetValueFunction": {
+          "Type": "AWS::Lambda::Function",
+          "Properties": {
+            "Code": {
+              "S3Bucket": "repair-lneil",
+              "S3Key": "get-value.zip"
+            },
+            "Role": "arn:aws:iam::286456780400:role/service-role/add-customer-role-sxndynrl",
+            "Runtime": "python3.7",
+            "Handler": "get-value.lambda_handler",
+            "VpcConfig": {
+              "SubnetIds": [
+                "subnet-0f7a246f9e06f81d2",
+                "subnet-0af6145256374ccf3",
+                "subnet-021c1678adadf3366"
+              ],
+              "SecurityGroupIds": [
+                "sg-0d2971aad7d08fa3f"
+              ]
+            }
             }
         },
         "ApiGateway": {
@@ -951,12 +1018,68 @@
                 ]
             }
         },
+        "GetValueResource": {
+            "Type": "AWS::ApiGateway::Resource",
+            "Properties": {
+              "RestApiId": { "Ref": "ApiGateway" },
+              "ParentId": { "Ref": "ApiGatewayRootResourceId" },
+              "PathPart": "getvalue"
+            }
+        },
+        "GetValueMethod": {
+            "Type": "AWS::ApiGateway::Method",
+            "Properties": {
+              "RestApiId": { "Ref": "ApiGateway" },
+              "ResourceId": { "Ref": "GetValueResource" },
+              "HttpMethod": "POST",
+              "AuthorizationType": "NONE",
+              "Integration": {
+                "Type": "AWS_PROXY",
+                "IntegrationHttpMethod": "POST",
+                "Uri": {
+                  "Fn::Sub": "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${GetValueFunction.Arn}/invocations"
+                }
+              },
+              "MethodResponses": [
+                {
+                  "StatusCode": 200,
+                  "ResponseParameters": {
+                    "method.response.header.Access-Control-Allow-Headers": true,
+                    "method.response.header.Access-Control-Allow-Methods": true,
+                    "method.response.header.Access-Control-Allow-Origin": true
+                  }
+                }
+              ]
+            }
+        },
+        "GetValueMethodPermission": {
+            "Type": "AWS::Lambda::Permission",
+            "Properties": {
+              "Action": "lambda:InvokeFunction",
+              "FunctionName": { "Ref": "GetValueFunction" },
+              "Principal": "apigateway.amazonaws.com",
+              "SourceArn": {
+                "Fn::Sub": "arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${ApiGateway}/*/*/getvalue"
+              }
+            }
+        },
         "ApiGatewayDeployment": {
             "Type": "AWS::ApiGateway::Deployment",
-            "DependsOn": [ "AddCustomerMethod", "AddAssetFunction", "AddEmployeeFunction", "AddInvoiceFunction", "AddItemFunction", "AddStockFunction", "AddStoreFunction", "AddTicketFunction", "QueryFunction" ],
+            "DependsOn": [ "AddCustomerMethod", "AddAssetFunction", "AddEmployeeFunction", "AddInvoiceFunction", "AddItemFunction", "AddStockFunction", "AddStoreFunction", "AddTicketFunction", "QueryFunction", "GetValueMethod" ],
             "Properties": {
                 "RestApiId": { "Ref": "ApiGateway" },
                 "StageName": "prod"
+            }
+        },        
+        "ApiEndpointSSMParameter": {
+            "Type": "AWS::SSM::Parameter",
+            "Properties": {
+              "Name": {"Ref": "ApiEndpointParameter"},
+              "Description": "This is the SSM parameter for the API endpoint URL",
+              "Type": "String",
+              "Value": {
+                "Fn::Sub": "https://${ApiGateway}.execute-api.${AWS::Region}.${AWS::URLSuffix}/prod"
+              }
             }
         },
         "LambdaApiGatewayInvokeAddCustomer": {
