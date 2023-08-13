@@ -69,11 +69,8 @@
             "Properties": {
               "ServiceName": "com.amazonaws.ap-southeast-2.ssm",
               "VpcId": "vpc-0e374d23662af34be",
-              "SubnetIds": [
-                "subnet-0f7a246f9e06f81d2", 
-                "subnet-0af6145256374ccf3", 
-                "subnet-021c1678adadf3366"
-              ],
+              "PrivateDnsEnabled": true,
+              "VpcEndpointType": "Interface",
               "SecurityGroupIds": ["sg-0c4a09ccfe5dc9b4e"]
             }
         },
