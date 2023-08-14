@@ -17,7 +17,7 @@
     }
     },
     "Parameters": {
-        "TENANT": {
+        "TENANT": { 
         "Type": "String",
         "Description": "This is a sample parameter for a string value."
         },
@@ -67,11 +67,12 @@
         "SsmVpcEndpoint": {
             "Type": "AWS::EC2::VPCEndpoint",
             "Properties": {
-              "ServiceName": "com.amazonaws.ap-southeast-2.ssm",
-              "VpcId": "vpc-0e374d23662af34be",
-              "PrivateDnsEnabled": true,
-              "VpcEndpointType": "Interface",
-              "SecurityGroupIds": ["sg-0c4a09ccfe5dc9b4e"]
+                "ServiceName": "com.amazonaws.ap-southeast-2.ssm",
+                "VpcId": "vpc-0e374d23662af34be",
+                "PrivateDnsEnabled": true,
+                "VpcEndpointType": "Interface",
+                "SecurityGroupIds": ["sg-0c4a09ccfe5dc9b4e"],
+                "SubnetIds": ["subnet-0f7a246f9e06f81d2", "subnet-0af6145256374ccf3", "subnet-021c1678adadf3366"]
             }
         },
         "UserSSMParameter": {
@@ -110,6 +111,71 @@
                 "Value": "repairshop"
             }
         },
+        "TagCognitoUserFunctionRole": {
+            "Type": "AWS::IAM::Role",
+            "Properties": {
+                "AssumeRolePolicyDocument": {
+                    "Version": "2012-10-17",
+                    "Statement": [
+                        {
+                            "Effect": "Allow",
+                            "Principal": {
+                                "Service": "lambda.amazonaws.com"
+                            },
+                            "Action": "sts:AssumeRole"
+                        }
+                    ]
+                },
+                "Policies": [
+                    {
+                        "PolicyName": "TagCognitoUserPolicy",
+                        "PolicyDocument": {
+                            "Version": "2012-10-17",
+                            "Statement": [
+                                {
+                                    "Effect": "Allow",
+                                    "Action": [
+                                        "cognito-idp:AdminUpdateUserAttributes",
+                                        "cognito-idp:AdminGetUser"
+                                    ],
+                                    "Resource": "*"
+                                },
+                                {
+                                    "Effect": "Allow",
+                                    "Action": [
+                                        "logs:CreateLogGroup",
+                                        "logs:CreateLogStream",
+                                        "logs:PutLogEvents"
+                                    ],
+                                    "Resource": "arn:aws:logs:ap-southeast-2:286456780400:*"
+                                }
+                            ]
+                        }
+                    }
+                ]
+            }
+        },
+        "TagCognitoUserFunction": {
+            "Type": "AWS::Lambda::Function",
+            "Properties": {
+                "Handler": "tag-cognito-user.lambda_handler",
+                "Role": { "Fn::GetAtt": [ "TagCognitoUserFunctionRole", "Arn" ] },
+                "Code": {
+                    "S3Bucket": "repair-lneil",
+                    "S3Key": "tag-cognito-user.zip"
+                },
+                "Runtime": "python3.7",
+                "Environment": {
+                    "Variables": {
+                        "DB": { "Ref": "DBParameter" },
+                        "USER": { "Ref": "UserParameter" },
+                        "PASSWORD": { "Ref": "PasswordParameter" },
+                        "HOST": { "Ref": "HostParameter" },
+                        "PORT": { "Ref": "PortParameter" }
+                    }
+                }
+            }
+        },
         "UserPool": {
             "Type": "AWS::Cognito::UserPool",
             "Properties": {
@@ -130,13 +196,19 @@
                     },
                     {
                         "Name": "email",
-                        "AttributeDataType": "String"
+                        "AttributeDataType": "String",
+                        "Required": true
                     }
                 ],
                 "UsernameConfiguration": {
-                    "CaseSensitive": false
+                    "CaseSensitive": true
                 },
                 "AutoVerifiedAttributes": [ "email" ],
+                "LambdaConfig": {
+                    "PostConfirmation": {
+                        "Fn::GetAtt": [ "TagCognitoUserFunction", "Arn" ]
+                    }
+                },
                 "VerificationMessageTemplate": {
                     "EmailSubject": "Verify your email for our awesome app!",
                     "EmailMessage": "Please click the link below to verify your email address. {####}"

@@ -1,6 +1,7 @@
 import psycopg2
 import boto3
 import os
+import json
 
 ## DB & VPC Connection
 ssm = boto3.client('ssm')
@@ -52,26 +53,27 @@ def create_customer(first_name, last_name, business, email, phone, address_line_
     return customer_id
 
 def lambda_handler(event, context):
-    first_name = event['first_name']
-    last_name = event['last_name']
-    business = event['business']
-    email = event['email']
-    phone = event['phone']
-    address_line_1 = event['address_line_1']
-    address_line_2 = event['address_line_2']
-    city = event['city']
-    state_territory = event['state_territory']
-    zip_code = event['zip_code']
-    country = event['country']
-    referred_by = event['referred_by']
-    tax_rate = event['tax_rate']
-    is_sms = event['is_sms']
-    is_billing_emails = event['is_billing_emails']
-    is_marketing_emails = event['is_marketing_emails']
-    is_report_emails = event['is_report_emails']
-    is_portal_user = event['is_portal_user']
-    additional_notification_email = event['additional_notification_email']
-    invoice_cc_email = event['invoice_cc_email']
+    body = json.loads(event['body'])
+    first_name = body['first_name']
+    last_name = body['last_name']
+    business = body['business']
+    email = body['email']
+    phone = body['phone']
+    address_line_1 = body['address_line_1']
+    address_line_2 = body['address_line_2']
+    city = body['city']
+    state_territory = body['state_territory']
+    zip_code = body['zip_code']
+    country = body['country']
+    referred_by = body['referred_by']
+    tax_rate = body['tax_rate']
+    is_sms = body['is_sms']
+    is_billing_emails = body['is_billing_emails']
+    is_marketing_emails = body['is_marketing_emails']
+    is_report_emails = body['is_report_emails']
+    is_portal_user = body['is_portal_user']
+    additional_notification_email = body['additional_notification_email']
+    invoice_cc_email = body['invoice_cc_email']
     
     customer_id = create_customer(first_name, last_name, business, email, phone, address_line_1,
                                   address_line_2, city, state_territory, zip_code, country,

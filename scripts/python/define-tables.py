@@ -3,7 +3,6 @@ import json
 import boto3
 
 
-
 def lambda_handler(event, context):
     print(event)
     ssm = boto3.client('ssm')

@@ -1,6 +1,7 @@
 import psycopg2
 import boto3
 import os
+import json
 
 ## DB & VPC Connection
 ssm = boto3.client('ssm')
@@ -55,15 +56,16 @@ def add_ticket_to_database(customer_id, ticket_title, ticket_priority_level,
         conn.close()
 
 def lambda_handler(event, context):
-    customer_id = event['customer_id']
-    ticket_title = event['ticket_title']
-    ticket_priority_level = event['ticket_priority_level']
-    ticket_description = event['ticket_description']
-    creation_date = event['creation_date']
-    due_date = event['due_date']
-    tech = event['tech']
-    net_price = event['net_price']
-    gross_price = event['gross_price']
+    body = json.loads(event['body'])
+    customer_id = body['customer_id']
+    ticket_title = body['ticket_title']
+    ticket_priority_level = body['ticket_priority_level']
+    ticket_description = body['ticket_description']
+    creation_date = body['creation_date']
+    due_date = body['due_date']
+    tech = body['tech']
+    net_price = body['net_price']
+    gross_price = body['gross_price']
 
     try:
         ticket_id = add_ticket_to_database(customer_id, ticket_title, ticket_priority_level,

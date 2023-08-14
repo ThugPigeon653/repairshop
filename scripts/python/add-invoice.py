@@ -1,6 +1,7 @@
 import psycopg2
 import boto3
 import os
+import json
 
 ## DB & VPC Connection
 ssm = boto3.client('ssm')
@@ -53,14 +54,15 @@ def add_invoice_to_database(invoice_status, date_created, is_taxable, date_paid,
         conn.close()
 
 def lambda_handler(event, context):
-    invoice_status = event['invoice_status']
-    date_created = event['date_created']
-    is_taxable = event['is_taxable']
-    date_paid = event['date_paid']
-    tech_notes = event['tech_notes']
-    ticket = event['ticket']
-    payment_method = event['payment_method']
-    purchase_order_number = event['purchase_order_number']
+    body = json.loads(event['body'])
+    invoice_status = body['invoice_status']
+    date_created = body['date_created']
+    is_taxable = body['is_taxable']
+    date_paid = body['date_paid']
+    tech_notes = body['tech_notes']
+    ticket = body['ticket']
+    payment_method = body['payment_method']
+    purchase_order_number = body['purchase_order_number']
 
     try:
         invoice_id = add_invoice_to_database(invoice_status, date_created, is_taxable, date_paid,

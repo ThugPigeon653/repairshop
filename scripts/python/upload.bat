@@ -1,11 +1,10 @@
 @echo off
+setlocal
 
-setlocal enabledelayedexpansion
+set S3_BUCKET=repair-lneil
 
-for %%F in (*.py) do (
-    set filename=%%~nF
-    aws s3 cp "%%F" "s3://repair-lneil/!filename!.py"
+for %%i in (*.py) do (
+    aws s3 cp "%%i" "s3://%S3_BUCKET%/"
 )
 
-echo All .py files uploaded to repair-lneil S3 bucket.
-pause
+echo All Python files uploaded to S3 bucket: %S3_BUCKET%

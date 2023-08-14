@@ -1,6 +1,7 @@
 import psycopg2
 import boto3
 import os
+import json
 
 ## DB & VPC Connection
 ssm = boto3.client('ssm')
@@ -53,13 +54,14 @@ def add_item_to_database(item_display_name, item_make, item_model, item_descript
         conn.close()
 
 def lambda_handler(event, context):
-    item_display_name = event['item_display_name']
-    item_make = event['item_make']
-    item_model = event['item_model']
-    item_description = event['item_description']
-    operating_system = event['operating_system']
-    website = event['website']
-    custom_fields = event['custom_fields']
+    body = json.loads(event['body'])
+    item_display_name = body['item_display_name']
+    item_make = body['item_make']
+    item_model = body['item_model']
+    item_description = body['item_description']
+    operating_system = body['operating_system']
+    website = body['website']
+    custom_fields = body['custom_fields']
     
     try:
         item_id = add_item_to_database(item_display_name, item_make, item_model, item_description,

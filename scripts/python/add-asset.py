@@ -1,6 +1,7 @@
 import psycopg2
 import boto3
 import os
+import json
 
 ## DB & VPC Connection
 ssm = boto3.client('ssm')
@@ -50,12 +51,13 @@ def create_asset(asset_name, asset_serial, asset_password, warranty_expiration, 
         conn.close()
 
 def lambda_handler(event, context):
-    asset_name = event['asset_name']
-    asset_serial = event['asset_serial']
-    asset_password = event['asset_password']
-    warranty_expiration = event['warranty_expiration']
-    date_of_manufacture = event['date_of_manufacture']
-    notes = event['notes']
+    body = json.loads(event['body'])
+    asset_name = body['asset_name']
+    asset_serial = body['asset_serial']
+    asset_password = body['asset_password']
+    warranty_expiration = body['warranty_expiration']
+    date_of_manufacture = body['date_of_manufacture']
+    notes = body['notes']
 
     try:
         asset_id = create_asset(asset_name, asset_serial, asset_password, warranty_expiration, date_of_manufacture, notes)

@@ -1,6 +1,7 @@
 import psycopg2
 import boto3
 import os
+import json
 
 ## DB & VPC Connection
 ssm = boto3.client('ssm')
@@ -49,12 +50,13 @@ def add_stock_item(barcode, net_paid, tax_paid, net_sale_price, tax_charged, ite
         conn.close()
 
 def lambda_handler(event, context):
-    barcode = event['barcode']
-    net_paid = event['net_paid']
-    tax_paid = event['tax_paid']
-    net_sale_price = event['net_sale_price']
-    tax_charged = event['tax_charged']
-    item = event['item']
+    body = json.loads(event['body'])
+    barcode = body['barcode']
+    net_paid = body['net_paid']
+    tax_paid = body['tax_paid']
+    net_sale_price = body['net_sale_price']
+    tax_charged = body['tax_charged']
+    item = body['item']
 
     try:
         stock_id = add_stock_item(barcode, net_paid, tax_paid, net_sale_price, tax_charged, item)

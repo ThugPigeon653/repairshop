@@ -1,6 +1,7 @@
 import psycopg2
 import boto3
 import os
+import json
 
 ## DB & VPC Connection
 ssm = boto3.client('ssm')
@@ -49,10 +50,11 @@ def add_store_to_database(address_line_1, city, zip_code, phone):
         conn.close()
 
 def lambda_handler(event, context):
-    address_line_1 = event['address_line_1']
-    city = event['city']
-    zip_code = event['zip_code']
-    phone = event['phone']
+    body = json.loads(event['body'])
+    address_line_1 = body['address_line_1']
+    city = body['city']
+    zip_code = body['zip_code']
+    phone = body['phone']
 
     try:
         store_id = add_store_to_database(address_line_1, city, zip_code, phone)

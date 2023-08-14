@@ -1,6 +1,7 @@
 import psycopg2
 import boto3
 import os
+import json
 
 ## DB & VPC Connection
 ssm = boto3.client('ssm')
@@ -50,10 +51,11 @@ def add_employee_to_database(first_name, last_name, email, store):
         conn.close()
 
 def lambda_handler(event, context):
-    first_name = event['first_name']
-    last_name = event['last_name']
-    email = event['email']
-    store = event['store']
+    body = json.loads(event['body'])
+    first_name = body['first_name']
+    last_name = body['last_name']
+    email = body['email']
+    store = body['store']
 
     try:
         employee_id = add_employee_to_database(first_name, last_name, email, store)
