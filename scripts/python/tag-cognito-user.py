@@ -1,60 +1,61 @@
-import boto3
-import uuid
-import psycopg2
 import os
+import boto3
+import json
+import uuid
 
-def add_user_to_database(username, tenant_id):
-    # Add your RDS connection setup here
-    database = os.environ['DB']
-    user = os.environ['USER']
-    password = os.environ['PASSWORD']
-    host = os.environ['HOST']
-    port = os.environ['PORT']
-
-    conn = psycopg2.connect(database=database, user=user, password=password, host=host, port=port)
-    cursor = conn.cursor()
-
-    sql = '''
-    INSERT INTO public.users (username, tenant_id)
-    VALUES (%s, %s)
-    '''
-    data = (username, tenant_id)
-
-    try:
-        cursor.execute(sql, data)
-        conn.commit()
-    except psycopg2.Error as e:
-        # Handle exceptions
-        raise Exception("Error adding user to the database")
-    finally:
-        cursor.close()
-        conn.close()
+ssm = boto3.client('ssm')
+cognito_client = boto3.client('cognito-idp')
 
 def lambda_handler(event, context):
-    user_attributes = event['request']['userAttributes']
-    username = user_attributes['sub']  
-
-    tenant_id = str(uuid.uuid4())
-
-    cognito_client = boto3.client('cognito-idp')
-    response = cognito_client.admin_tag_user(
-        UserPoolId=event['userPoolId'],
-        Username=username,
-        UserAttributes=[
-            {
-                'Name': 'custom:tenant_id',
-                'Value': tenant_id
-            }
-        ]
-    )
-
-    # Add user to RDS database
     try:
-        add_user_to_database(username, tenant_id)
+        unique_tag = str(uuid.uuid4())  # Generate a UUID as the unique tag
+        for user in event['request']['userAttributes']:
+            if user == 'email':  # Use any user attribute that's available
+                email = event['request']['userAttributes'][user]
+                update_user_attributes(event['userName'], email, unique_tag)
     except Exception as e:
-        return {
-            'statusCode': 400,
-            'body': 'Error adding user to database'
+        print(f"Error: {e}")
+
+    response = {
+        'response': event['response']
+    }
+
+    return response
+
+def update_user_attributes(username, email, unique_tag):
+    try:
+        pool = get_parameter_value(os.environ['POOL'])
+
+        response = cognito_client.admin_update_user_attributes(
+            UserPoolId=pool,
+            Username=username,
+            UserAttributes=[
+                {
+                    'Name': 'custom:tenant_tag',
+                    'Value': unique_tag
+                }
+            ]
+        )
+
+        ddl_event = {
+            'tenant': unique_tag  # Pass the relevant tenant ID or value
         }
 
-    return event
+        # Invoke the DDL Lambda function
+        response = boto3.client('lambda').invoke(
+            FunctionName=os.environ['DEFINETABLES'],
+            InvocationType='Event',  # Asynchronous invocation
+            Payload=json.dumps(ddl_event)
+        )
+
+        print(f"User attributes updated for {username}")
+    except Exception as e:
+        print(f"Error updating user attributes: {e}")
+
+def get_parameter_value(parameter_name):
+    try:
+        response = ssm.get_parameter(Name=parameter_name, WithDecryption=True)
+        return response['Parameter']['Value']
+    except Exception as e:
+        print(f"Error retrieving parameter value: {e}")
+        return None

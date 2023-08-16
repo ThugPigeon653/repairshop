@@ -2,76 +2,57 @@ import psycopg2
 import json
 import boto3
 
+# Initialize the database connection outside the lambda_handler function
+ssm = boto3.client('ssm')
+db_name = ssm.get_parameter(Name='/repair/DBParameter', WithDecryption=False)['Parameter']['Value']
+db_user = ssm.get_parameter(Name='/repair/UserParameter', WithDecryption=False)['Parameter']['Value']
+db_password = ssm.get_parameter(Name='/repair/PasswordParameter', WithDecryption=False)['Parameter']['Value']
+db_host = ssm.get_parameter(Name='/repair/HostParameter', WithDecryption=False)['Parameter']['Value']
+db_port = ssm.get_parameter(Name='/repair/PortParameter', WithDecryption=False)['Parameter']['Value']
+
+conn = psycopg2.connect(
+    dbname=db_name,
+    user=db_user,
+    password=db_password,
+    host=db_host,
+    port=db_port
+)
+
+def fetch_sql_statements_from_s3():
+    try:
+        s3 = boto3.client('s3')
+        response = s3.get_object(Bucket='repair-lneil', Key='ddl.sql')
+        sql_statements = response['Body'].read().decode('utf-8')
+        return sql_statements
+    except Exception as e:
+        raise e
 
 def lambda_handler(event, context):
-    print(event)
-    ssm = boto3.client('ssm')
-    payload = json.loads(event['Payload'])
-    tenant = payload['TENANT']
-    if not tenant:
+    user_attributes = event['request']['userAttributes']
+    
+    if 'custom:tenant_tag' not in user_attributes:
         return {
             'statusCode': 400,
-            'body': json.dumps('TENANT parameter missing in the payload')
+            'body': json.dumps('Tenant tag not found in user attributes')
         }
-    sql_statements = sql_statements.replace('TENANT', tenant)
+    
+    tenant = user_attributes['custom:tenant_tag']
+    
     try:
-        sql_statements = ssm.get_parameter(Name='/repair/ddl/s3', WithDecryption=False)['Parameter']['Value']
-    except:
+        sql_statements = fetch_sql_statements_from_s3()
+        sql_statements = sql_statements.replace('TENANT', tenant)
+    except Exception as e:
         return {
             'statusCode': 400,
-            'body': json.dumps('SSM: failed to get /repair/ddl/s3')
+            'body': json.dumps('Error fetching or replacing SQL statements: ' + str(e))
         }
-    try:
-        db_name = ssm.get_parameter(Name='/repair/DBParameter', WithDecryption=False)['Parameter']['Value']
-    except:
-        return {
-            'statusCode': 400,
-            'body': json.dumps('SSM: failed to get /repair/DBParameter')
-        }
-    try:
-        db_user = ssm.get_parameter(Name='/repair/UserParameter', WithDecryption=False)['Parameter']['Value']
-    except:
-        return {
-            'statusCode': 400,
-            'body': json.dumps('SSM: failed to get /repair/UserParameter')
-        }
-    try:
-        db_password = ssm.get_parameter(Name='/repair/PasswordParameter', WithDecryption=False)['Parameter']['Value']
-    except:
-        return {
-            'statusCode': 400,
-            'body': json.dumps('SSM: failed to get PasswordParameter')
-        }
-    try:
-        db_host = ssm.get_parameter(Name='/repair/HostParameter', WithDecryption=False)['Parameter']['Value']
-    except:
-        return {
-            'statusCode': 400,
-            'body': json.dumps('SSM: failed to get /repair/HostParameter')
-        }
-    try:
-        db_port = ssm.get_parameter(Name='/repair/PortParameter', WithDecryption=False)['Parameter']['Value']
-    except:
-        return {
-            'statusCode': 400,
-            'body': json.dumps('SSM: failed to get /repair/PortParameter')
-        }
-
+    
     try:
         print("connecting...")
-        conn = psycopg2.connect(
-            dbname=db_name,
-            user=db_user,
-            password=db_password,
-            host=db_host,
-            port=db_port
-        )
-        print("connected")
         cursor = conn.cursor()
         cursor.execute(sql_statements)
         conn.commit()
         cursor.close()
-        conn.close()
 
         return {
             'statusCode': 200,
@@ -83,3 +64,5 @@ def lambda_handler(event, context):
             'statusCode': 500,
             'body': json.dumps('Error creating tables: ' + str(e))
         }
+    finally:
+        conn.close()  # Close the database connection in the finally block

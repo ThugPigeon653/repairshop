@@ -14,40 +14,40 @@ def get_parameter_value(parameter_name):
         print(f"Error retrieving parameter value: {e}")
         return None
 
-def add_store_to_database(address_line_1, city, zip_code, phone):
-    database = get_parameter_value(os.environ['DB'])
-    user = get_parameter_value(os.environ['USER'])
-    password = get_parameter_value(os.environ['PASSWORD'])
-    host = get_parameter_value(os.environ['HOST'])
-    port = get_parameter_value(os.environ['PORT'])
+# Add your connection setup here
+database = get_parameter_value(os.environ['DB'])
+user = get_parameter_value(os.environ['USER'])
+password = get_parameter_value(os.environ['PASSWORD'])
+host = get_parameter_value(os.environ['HOST'])
+port = get_parameter_value(os.environ['PORT'])
 
-    conn = psycopg2.connect(database=database, user=user, password=password, host=host, port=port)
-    cursor = conn.cursor()
+# Create a global connection and cursor
+conn = psycopg2.connect(database=database, user=user, password=password, host=host, port=port)
+cursor = conn.cursor()
 
+def create_store(address_line_1, city, zip_code, phone, tenant_tag):
     sql = '''
-    INSERT INTO public.stores (address_line_1, city, zip_code, phone)
+    INSERT INTO public.stores_TENANT (address_line_1, city, zip_code, phone)
     VALUES (%s, %s, %s, %s)
-    '''
+    '''.replace("TENANT", tenant_tag)
     data = (address_line_1, city, zip_code, phone)
 
     try:
         cursor.execute(sql, data)
-        store_id = cursor.fetchone()[0]
         conn.commit()
-        return store_id
+        cursor.execute("SELECT lastval()")
+        store_id = cursor.fetchone()[0]
     except psycopg2.Error as e:
-        # Check the specific exception raised by psycopg2
         if isinstance(e, psycopg2.DataError):
-            error_message = f"Error adding store: Invalid value for one or more parameters"
+            error_message = f"Error creating store: Invalid value for one or more parameters"
         elif isinstance(e, psycopg2.IntegrityError):
-            error_message = f"Error adding store: Integrity constraint violation"
+            error_message = f"Error creating store: Integrity constraint violation"
         else:
-            error_message = f"Error adding store: Unknown error occurred"
+            error_message = f"Error creating store: Unknown error occurred"
         print(error_message)
         raise Exception(error_message)
-    finally:
-        cursor.close()
-        conn.close()
+
+    return store_id
 
 def lambda_handler(event, context):
     body = json.loads(event['body'])
@@ -56,11 +56,13 @@ def lambda_handler(event, context):
     zip_code = body['zip_code']
     phone = body['phone']
 
+    tenant_tag = event['request']['userAttributes']['custom:tenant_tag']
+
     try:
-        store_id = add_store_to_database(address_line_1, city, zip_code, phone)
+        store_id = create_store(address_line_1, city, zip_code, phone, tenant_tag)
         return {
             'statusCode': 200,
-            'body': f'Store added with ID: {store_id}'
+            'body': f'Store created with ID: {store_id}'
         }
     except Exception as e:
         return {

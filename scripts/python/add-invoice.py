@@ -14,18 +14,19 @@ def get_parameter_value(parameter_name):
         print(f"Error retrieving parameter value: {e}")
         return None
 
+# Add your connection setup here
+database = get_parameter_value(os.environ['DB'])
+user = get_parameter_value(os.environ['USER'])
+password = get_parameter_value(os.environ['PASSWORD'])
+host = get_parameter_value(os.environ['HOST'])
+port = get_parameter_value(os.environ['PORT'])
+
+# Create a global connection and cursor
+conn = psycopg2.connect(database=database, user=user, password=password, host=host, port=port)
+cursor = conn.cursor()
+
 def add_invoice_to_database(invoice_status, date_created, is_taxable, date_paid,
                             tech_notes, ticket, payment_method, purchase_order_number):
-    # Add your connection setup here
-    database = get_parameter_value(os.environ['DB'])
-    user = get_parameter_value(os.environ['USER'])
-    password = get_parameter_value(os.environ['PASSWORD'])
-    host = get_parameter_value(os.environ['HOST'])
-    port = get_parameter_value(os.environ['PORT'])
-
-    conn = psycopg2.connect(database=database, user=user, password=password, host=host, port=port)
-    cursor = conn.cursor()
-
     sql = '''
     INSERT INTO public.invoices (invoice_status, date_created, is_taxable, date_paid,
                                 tech_notes, ticket, payment_method, purchase_order_number)
@@ -36,9 +37,9 @@ def add_invoice_to_database(invoice_status, date_created, is_taxable, date_paid,
 
     try:
         cursor.execute(sql, data)
-        invoice_id = cursor.fetchone()[0]
         conn.commit()
-        return invoice_id
+        cursor.execute("SELECT lastval()")  # Retrieve the last auto-generated ID
+        invoice_id = cursor.fetchone()[0]
     except psycopg2.Error as e:
         # Check the specific exception raised by psycopg2
         if isinstance(e, psycopg2.DataError):
@@ -49,9 +50,8 @@ def add_invoice_to_database(invoice_status, date_created, is_taxable, date_paid,
             error_message = f"Error adding invoice: Unknown error occurred"
         print(error_message)
         raise Exception(error_message)
-    finally:
-        cursor.close()
-        conn.close()
+
+    return invoice_id
 
 def lambda_handler(event, context):
     body = json.loads(event['body'])

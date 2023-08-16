@@ -11,36 +11,41 @@ import {apiEndpoint} from './custom-exports'
 
 const api = apiEndpoint + "/getvalue";
 
+console.log("getting pool...")
+
+const frontendOrigin = window.location.origin;
+const frontendProtocol = window.location.protocol;
+
+console.log(frontendProtocol)
+
 const poolIdResponse = await fetch(api, {
   method: 'POST',
-  headers: {
-    'Content-Type': 'application/json'
-  },
   body: JSON.stringify({
-    parameterName: '/repair/userPoolIdParameter'
+    parameterName: '/repair/UserPoolIdParameter'
   })
 });
 const poolIdData = await poolIdResponse.json();
+console.log("getting client...")
 
 const clientIdResponse = await fetch(api, {
   method: 'POST',
-  headers: {
-    'Content-Type': 'application/json'
-  },
   body: JSON.stringify({
-    parameterName: 'repair/appClientIdParameter'
+    parameterName: '/repair/AppClientIdParameter'
   })
 });
 const clientIdData = await clientIdResponse.json();
+
+console.log(clientIdData.value)
 
 const dynamicConfig = {
   ...awsconfig,
   Auth: {
     ...awsconfig.Auth,
-    userPoolId: poolIdData.parameterValue,  
-    userPoolWebClientId: clientIdData.parameterValue
+    userPoolId: poolIdData.value,  
+    userPoolWebClientId: clientIdData.value
   }
 };
+console.log(dynamicConfig)
 
 Amplify.configure(dynamicConfig);
 function App() {

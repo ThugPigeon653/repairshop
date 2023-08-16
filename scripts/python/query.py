@@ -28,13 +28,16 @@ def lambda_handler(event, context):
         if not isinstance(table_name, str) or not table_name:
             raise ValueError('Invalid table name')
 
-        # Construct the SQL query dynamically based on the search parameters, table name, and select value
+        # Retrieve the tenant tag from user attributes
+        tenant_tag = event['request']['userAttributes']['custom:tenant_tag']
+
+        # Construct the SQL query dynamically based on the search parameters, table name, select value, and tenant tag
         if select_columns:
             select_clause = sql.SQL(', ').join(sql.Identifier(column) for column in select_columns)
         else:
             select_clause = sql.SQL('*')
 
-        query = sql.SQL("SELECT {} FROM {} WHERE {}").format(
+        query = sql.SQL("SELECT {} FROM {} WHERE {} AND tenant_tag = {}").format(
             select_clause,
             sql.Identifier(table_name),
             sql.SQL(' AND ').join(
@@ -43,7 +46,8 @@ def lambda_handler(event, context):
                     search_term=sql.Literal(search_term)
                 )
                 for column, search_term in search_params.items()
-            )
+            ),
+            sql.Literal(tenant_tag)
         )
 
         # Retrieve database connection information from SSM Parameter Store

@@ -11,5 +11,41 @@
       "StackId": "arn:aws:cloudformation:ap-southeast-2:286456780400:stack/amplify-repair-dev-105452/854023a0-3718-11ee-afc9-020b137477d6",
       "AmplifyAppId": "djhi4xk1xahgm"
     }
+  },
+  "auth": {
+    "repair9d2a1fd0": {
+      "service": "Cognito",
+      "serviceType": "imported",
+      "providerPlugin": "awscloudformation",
+      "dependsOn": [],
+      "customAuth": false,
+      "output": {
+        "UserPoolId": "ap-southeast-2_P3kYzme6S",
+        "UserPoolName": "MyUserPool",
+        "AppClientID": "1udaihdmhc89kdeimq4bisi1mt",
+        "AppClientIDWeb": "1udaihdmhc89kdeimq4bisi1mt",
+        "HostedUIDomain": "repairshop-lneil"
+      },
+      "frontendAuthConfig": {
+        "socialProviders": [],
+        "usernameAttributes": [],
+        "signupAttributes": [
+          "EMAIL"
+        ],
+        "passwordProtectionSettings": {
+          "passwordPolicyMinLength": 8,
+          "passwordPolicyCharacters": [
+            "REQUIRES_LOWERCASE",
+            "REQUIRES_UPPERCASE",
+            "REQUIRES_NUMBERS"
+          ]
+        },
+        "mfaConfiguration": "OFF",
+        "mfaTypes": [],
+        "verificationMechanisms": [
+          "EMAIL"
+        ]
+      }
+    }
   }
 }

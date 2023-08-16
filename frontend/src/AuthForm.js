@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { withAuthenticator, Authenticator } from '@aws-amplify/ui-react';
+import { withAuthenticator, Authenticator, SignUp } from '@aws-amplify/ui-react';
 import { customConfig } from './custom-exports';
 import '@aws-amplify/ui-react/styles.css';
 
@@ -24,8 +24,9 @@ function AuthForm() {
       <button onClick={openAuth}>Open Authenticator</button>
       {authOpen && (
         <div className="auth-form" onClick={handleFormClick}>
-          <Authenticator />
-        </div>
+          <Authenticator>
+            <SignUp signUpConfig={{ hiddenDefaults: [] }} /> {/* Include all required attributes */}
+          </Authenticator>        </div>
       )}
     </div>
   );

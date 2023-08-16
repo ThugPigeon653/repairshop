@@ -9,7 +9,7 @@ function AuthenticatorContainer({ authOpen, onClose }) {
   return authOpen ? (
     <div className="auth-form-container" onClick={onClose}>
       <div className="auth-form" onClick={handleFormClick}>
-        <Authenticator />
+        <Authenticator signUpAttributes={["email"]}/>
       </div>
     </div>
   ) : null;

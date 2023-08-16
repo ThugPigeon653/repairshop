@@ -22,16 +22,6 @@
       "Description": "The password of the root user."
     }
   },
-  "Resources": {
-    "InvokeDefineTablesFunction": {
-      "Type": "Custom::InvokeDefineTablesFunction",
-      "Properties": {
-        "ServiceToken": "arn:aws:lambda:ap-southeast-2:286456780400:function:define-tables",
-        "Payload": {
-          "TENANT": { "Ref": "TENANT" }
-        }
-      }
-    },
     "AddRootUserToUserPool": {
       "Type": "Custom::AddRootUserToUserPool",
       "Properties": {

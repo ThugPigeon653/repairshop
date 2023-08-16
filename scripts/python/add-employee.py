@@ -14,17 +14,18 @@ def get_parameter_value(parameter_name):
         print(f"Error retrieving parameter value: {e}")
         return None
 
+# Add your connection setup here
+database = get_parameter_value(os.environ['DB'])
+user = get_parameter_value(os.environ['USER'])
+password = get_parameter_value(os.environ['PASSWORD'])
+host = get_parameter_value(os.environ['HOST'])
+port = get_parameter_value(os.environ['PORT'])
+
+# Create a global connection and cursor
+conn = psycopg2.connect(database=database, user=user, password=password, host=host, port=port)
+cursor = conn.cursor()
+
 def add_employee_to_database(first_name, last_name, email, store):
-    # Add your connection setup here
-    database = get_parameter_value(os.environ['DB'])
-    user = get_parameter_value(os.environ['USER'])
-    password = get_parameter_value(os.environ['PASSWORD'])
-    host = get_parameter_value(os.environ['HOST'])
-    port = get_parameter_value(os.environ['PORT'])
-
-    conn = psycopg2.connect(database=database, user=user, password=password, host=host, port=port)
-    cursor = conn.cursor()
-
     sql = '''
     INSERT INTO public.employees (first_name, last_name, email, store)
     VALUES (%s, %s, %s, %s)
@@ -33,9 +34,9 @@ def add_employee_to_database(first_name, last_name, email, store):
 
     try:
         cursor.execute(sql, data)
-        employee_id = cursor.fetchone()[0]
         conn.commit()
-        return employee_id
+        cursor.execute("SELECT lastval()")  # Retrieve the last auto-generated ID
+        employee_id = cursor.fetchone()[0]
     except psycopg2.Error as e:
         # Check the specific exception raised by psycopg2
         if isinstance(e, psycopg2.DataError):
@@ -46,9 +47,8 @@ def add_employee_to_database(first_name, last_name, email, store):
             error_message = f"Error adding employee: Unknown error occurred"
         print(error_message)
         raise Exception(error_message)
-    finally:
-        cursor.close()
-        conn.close()
+
+    return employee_id
 
 def lambda_handler(event, context):
     body = json.loads(event['body'])

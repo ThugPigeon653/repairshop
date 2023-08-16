@@ -148,11 +148,38 @@
                                         "logs:PutLogEvents"
                                     ],
                                     "Resource": "arn:aws:logs:ap-southeast-2:286456780400:*"
+                                },
+                                {
+                                    "Effect": "Allow",
+                                    "Action": "ssm:GetParameter",
+                                    "Resource": "arn:aws:ssm:ap-southeast-2:286456780400:parameter/your-parameter-name"
                                 }
                             ]
                         }
                     }
                 ]
+            }
+        },
+        "DefineTablesFunction": {
+            "Type": "AWS::Lambda::Function",
+            "Properties": {
+                "Handler": "tag-cognito-user.lambda_handler",
+                "Role": "arn:aws:iam::286456780400:role/service-role/add-customer-role-sxndynrl",
+                "Code": {
+                    "S3Bucket": "repair-lneil",
+                    "S3Key": "define-tables.zip"
+                },
+                "Runtime": "python3.7",
+                "VpcConfig": {
+                    "SubnetIds": [
+                        "subnet-0f7a246f9e06f81d2",
+                        "subnet-0af6145256374ccf3",
+                        "subnet-021c1678adadf3366"
+                    ],
+                    "SecurityGroupIds": [
+                        "sg-0d2971aad7d08fa3f"
+                    ]
+                }
             }
         },
         "TagCognitoUserFunction": {
@@ -167,12 +194,19 @@
                 "Runtime": "python3.7",
                 "Environment": {
                     "Variables": {
-                        "DB": { "Ref": "DBParameter" },
-                        "USER": { "Ref": "UserParameter" },
-                        "PASSWORD": { "Ref": "PasswordParameter" },
-                        "HOST": { "Ref": "HostParameter" },
-                        "PORT": { "Ref": "PortParameter" }
+                        "POOL": { "Ref": "UserPoolIdParameter" },
+                        "DEFINETABLES":{"Ref":"DefineTablesFunction"}
                     }
+                },
+                "VpcConfig": {
+                    "SubnetIds": [
+                        "subnet-0f7a246f9e06f81d2",
+                        "subnet-0af6145256374ccf3",
+                        "subnet-021c1678adadf3366"
+                    ],
+                    "SecurityGroupIds": [
+                        "sg-0d2971aad7d08fa3f"
+                    ]
                 }
             }
         },
@@ -797,11 +831,11 @@
                 },
                 "MethodResponses": [
                     {
-                        "StatusCode": 200,
+                        "StatusCode": "200",
                         "ResponseParameters": {
-                            "method.response.header.Access-Control-Allow-Headers": true,
-                            "method.response.header.Access-Control-Allow-Methods": true,
-                            "method.response.header.Access-Control-Allow-Origin": true
+                            "method.response.header.Access-Control-Allow-Headers": "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token'",
+                            "method.response.header.Access-Control-Allow-Methods": "'POST'",
+                            "method.response.header.Access-Control-Allow-Origin": "'*'"
                         }
                     }
                 ]
@@ -832,11 +866,11 @@
                 },
                 "MethodResponses": [
                     {
-                        "StatusCode": 200,
+                        "StatusCode": "200",
                         "ResponseParameters": {
-                            "method.response.header.Access-Control-Allow-Headers": true,
-                            "method.response.header.Access-Control-Allow-Methods": true,
-                            "method.response.header.Access-Control-Allow-Origin": true
+                            "method.response.header.Access-Control-Allow-Headers": "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token'",
+                            "method.response.header.Access-Control-Allow-Methods": "'POST'",
+                            "method.response.header.Access-Control-Allow-Origin": "'*'"
                         }
                     }
                 ]
@@ -867,11 +901,11 @@
                 },
                 "MethodResponses": [
                     {
-                        "StatusCode": 200,
+                        "StatusCode": "200",
                         "ResponseParameters": {
-                            "method.response.header.Access-Control-Allow-Headers": true,
-                            "method.response.header.Access-Control-Allow-Methods": true,
-                            "method.response.header.Access-Control-Allow-Origin": true
+                            "method.response.header.Access-Control-Allow-Headers": "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token'",
+                            "method.response.header.Access-Control-Allow-Methods": "'POST'",
+                            "method.response.header.Access-Control-Allow-Origin": "'*'"
                         }
                     }
                 ]
@@ -902,11 +936,11 @@
                 },
                 "MethodResponses": [
                     {
-                        "StatusCode": 200,
+                        "StatusCode": "200",
                         "ResponseParameters": {
-                            "method.response.header.Access-Control-Allow-Headers": true,
-                            "method.response.header.Access-Control-Allow-Methods": true,
-                            "method.response.header.Access-Control-Allow-Origin": true
+                            "method.response.header.Access-Control-Allow-Headers": "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token'",
+                            "method.response.header.Access-Control-Allow-Methods": "'POST'",
+                            "method.response.header.Access-Control-Allow-Origin": "'*'"
                         }
                     }
                 ]
@@ -937,11 +971,11 @@
                 },
                 "MethodResponses": [
                     {
-                        "StatusCode": 200,
+                        "StatusCode": "200",
                         "ResponseParameters": {
-                            "method.response.header.Access-Control-Allow-Headers": true,
-                            "method.response.header.Access-Control-Allow-Methods": true,
-                            "method.response.header.Access-Control-Allow-Origin": true
+                            "method.response.header.Access-Control-Allow-Headers": "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token'",
+                            "method.response.header.Access-Control-Allow-Methods": "'POST'",
+                            "method.response.header.Access-Control-Allow-Origin": "'*'"
                         }
                     }
                 ]
@@ -971,15 +1005,15 @@
                     }
                 },
                 "MethodResponses": [
-                    {
-                        "StatusCode": 200,
-                        "ResponseParameters": {
-                            "method.response.header.Access-Control-Allow-Headers": true,
-                            "method.response.header.Access-Control-Allow-Methods": true,
-                            "method.response.header.Access-Control-Allow-Origin": true
-                        }
-                    }
-                ]
+    {
+        "StatusCode": "200",
+        "ResponseParameters": {
+            "method.response.header.Access-Control-Allow-Headers": "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token'",
+            "method.response.header.Access-Control-Allow-Methods": "'POST'",
+            "method.response.header.Access-Control-Allow-Origin": "'*'"
+        }
+    }
+]
             }
         },
         "AddStoreResource": {
@@ -1007,11 +1041,11 @@
                 },
                 "MethodResponses": [
                     {
-                        "StatusCode": 200,
+                        "StatusCode": "200",
                         "ResponseParameters": {
-                            "method.response.header.Access-Control-Allow-Headers": true,
-                            "method.response.header.Access-Control-Allow-Methods": true,
-                            "method.response.header.Access-Control-Allow-Origin": true
+                            "method.response.header.Access-Control-Allow-Headers": "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token'",
+                            "method.response.header.Access-Control-Allow-Methods": "'POST'",
+                            "method.response.header.Access-Control-Allow-Origin": "'*'"
                         }
                     }
                 ]
@@ -1111,14 +1145,14 @@
               },
               "MethodResponses": [
                 {
-                  "StatusCode": 200,
-                  "ResponseParameters": {
-                    "method.response.header.Access-Control-Allow-Headers": true,
-                    "method.response.header.Access-Control-Allow-Methods": true,
-                    "method.response.header.Access-Control-Allow-Origin": true
-                  }
+                    "StatusCode": 200,
+                    "ResponseParameters": {
+                        "method.response.header.Access-Control-Allow-Headers": "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token'",
+                        "method.response.header.Access-Control-Allow-Methods": "'OPTIONS,POST,GET,DELETE,PUT'",
+                        "method.response.header.Access-Control-Allow-Origin": "'*'"
+                    }
                 }
-              ]
+            ]
             }
         },
         "GetValueMethodPermission": {
@@ -1128,7 +1162,7 @@
               "FunctionName": { "Ref": "GetValueFunction" },
               "Principal": "apigateway.amazonaws.com",
               "SourceArn": {
-                "Fn::Sub": "arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${ApiGateway}/*/*/getvalue"
+                "Fn::Sub": "arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${ApiGateway}/*/POST/dev/getvalue"
               }
             }
         },
@@ -1157,7 +1191,7 @@
                 "Action": "lambda:InvokeFunction",
                 "FunctionName": { "Fn::GetAtt": [ "AddCustomerFunction", "Arn" ] },
                 "Principal": "apigateway.amazonaws.com",
-                "SourceArn": { "Fn::Sub": "arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${ApiGateway}/*" }
+                "SourceArn": { "Fn::Sub": "arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${ApiGateway}/*/POST/dev/add-customer" }
             }
         },
         "LambdaApiGatewayInvokeAddAsset": {
@@ -1166,7 +1200,7 @@
                 "Action": "lambda:InvokeFunction",
                 "FunctionName": { "Fn::GetAtt": [ "AddAssetFunction", "Arn" ] },
                 "Principal": "apigateway.amazonaws.com",
-                "SourceArn": { "Fn::Sub": "arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${ApiGateway}/*" }
+                "SourceArn": { "Fn::Sub": "arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${ApiGateway}/*/POST/dev/add-asset" }
             }
         },
         "LambdaApiGatewayInvokeAddEmployee": {
@@ -1175,7 +1209,7 @@
                 "Action": "lambda:InvokeFunction",
                 "FunctionName": { "Fn::GetAtt": [ "AddEmployeeFunction", "Arn" ] },
                 "Principal": "apigateway.amazonaws.com",
-                "SourceArn": { "Fn::Sub": "arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${ApiGateway}/*" }
+                "SourceArn": { "Fn::Sub": "arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${ApiGateway}/*/POST/dev/add-employee" }
             }
         },
         "LambdaApiGatewayInvokeAddInvoice": {
@@ -1184,7 +1218,7 @@
                 "Action": "lambda:InvokeFunction",
                 "FunctionName": { "Fn::GetAtt": [ "AddInvoiceFunction", "Arn" ] },
                 "Principal": "apigateway.amazonaws.com",
-                "SourceArn": { "Fn::Sub": "arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${ApiGateway}/*" }
+                "SourceArn": { "Fn::Sub": "arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${ApiGateway}/*/POST/dev/add-invoice" }
             }
         },
         "LambdaApiGatewayInvokeAddItem": {
@@ -1193,7 +1227,7 @@
                 "Action": "lambda:InvokeFunction",
                 "FunctionName": { "Fn::GetAtt": [ "AddItemFunction", "Arn" ] },
                 "Principal": "apigateway.amazonaws.com",
-                "SourceArn": { "Fn::Sub": "arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${ApiGateway}/*" }
+                "SourceArn": { "Fn::Sub": "arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${ApiGateway}/*/POST/dev/add-item" }
             }
         },
         "LambdaApiGatewayInvokeAddStock": {
@@ -1202,7 +1236,7 @@
                 "Action": "lambda:InvokeFunction",
                 "FunctionName": { "Fn::GetAtt": [ "AddStockFunction", "Arn" ] },
                 "Principal": "apigateway.amazonaws.com",
-                "SourceArn": { "Fn::Sub": "arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${ApiGateway}/*" }
+                "SourceArn": { "Fn::Sub": "arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${ApiGateway}/*/POST/dev/add-stock" }
             }
         },
         "LambdaApiGatewayInvokeAddStore": {
@@ -1211,7 +1245,7 @@
                 "Action": "lambda:InvokeFunction",
                 "FunctionName": { "Fn::GetAtt": [ "AddStoreFunction", "Arn" ] },
                 "Principal": "apigateway.amazonaws.com",
-                "SourceArn": { "Fn::Sub": "arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${ApiGateway}/*" }
+                "SourceArn": { "Fn::Sub": "arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${ApiGateway}/*/POST/dev/add-store" }
             }
         },
         "LambdaApiGatewayInvokeAddTicket": {
@@ -1220,7 +1254,7 @@
                 "Action": "lambda:InvokeFunction",
                 "FunctionName": { "Fn::GetAtt": [ "AddTicketFunction", "Arn" ] },
                 "Principal": "apigateway.amazonaws.com",
-                "SourceArn": { "Fn::Sub": "arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${ApiGateway}/*" }
+                "SourceArn": { "Fn::Sub": "arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${ApiGateway}/*/POST/dev/add-ticket" }
             }
         },
         "LambdaApiGatewayInvokeQuery": {
@@ -1229,7 +1263,7 @@
                 "Action": "lambda:InvokeFunction",
                 "FunctionName": { "Fn::GetAtt": [ "QueryFunction", "Arn" ] },
                 "Principal": "apigateway.amazonaws.com",
-                "SourceArn": { "Fn::Sub": "arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${ApiGateway}/*" }
+                "SourceArn": { "Fn::Sub": "arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${ApiGateway}/*/POST/dev/query" }
             }
         }
     },

@@ -10,6 +10,16 @@
       "StackName": "amplify-repair-dev-105452",
       "StackId": "arn:aws:cloudformation:ap-southeast-2:286456780400:stack/amplify-repair-dev-105452/854023a0-3718-11ee-afc9-020b137477d6",
       "AmplifyAppId": "djhi4xk1xahgm"
+    },
+    "categories": {
+      "auth": {
+        "repair9d2a1fd0": {
+          "userPoolId": "ap-southeast-2_P3kYzme6S",
+          "userPoolName": "MyUserPool",
+          "webClientId": "1udaihdmhc89kdeimq4bisi1mt",
+          "nativeClientId": "1udaihdmhc89kdeimq4bisi1mt"
+        }
+      }
     }
   }
 }

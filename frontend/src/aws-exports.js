@@ -5,7 +5,10 @@ const awsmobile = {
     Auth: {
         region: 'ap-southeast-2',
         userPoolId: 'ap-southeast-2_mKgnf0JFh',
-        userPoolWebClientId: '5l2ci7omt49ob6pp94lf23b842'
+        userPoolWebClientId: '5l2ci7omt49ob6pp94lf23b842',
+        signUpAttributes: {
+            email: true, // Include email as a required attribute
+          },
     },
     "aws_project_region": "ap-southeast-2"
 };
