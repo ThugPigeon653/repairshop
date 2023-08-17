@@ -7,7 +7,6 @@ import SearchFields from './SearchFields';
 import '@aws-amplify/ui-react/styles.css';
 import './styles.css';
 import { apiEndpoint } from './custom-exports';
-import UserProfile from './UserProfile';
 
 Amplify.configure(awsconfig);
 
@@ -66,6 +65,7 @@ function App() {
 
   const closeAuthForm = () => {
     setShowAuthForm(false);
+    console.log("closing form")
   };
 
   const generateSearchFields = (assetType) => {
@@ -80,11 +80,7 @@ function App() {
           toggleAuthForm={toggleAuthForm}
         />
         <br />
-        {user ? (
-          <UserProfile user={user} />
-        ) : (
-          <AuthenticatorContainer authOpen={showAuthForm} onClose={closeAuthForm} />
-        )}
+        <AuthenticatorContainer authOpen={showAuthForm} onClose={closeAuthForm} />
         {selectedAssetType && <SearchFields assetType={selectedAssetType} />}
       </header>
     </div>

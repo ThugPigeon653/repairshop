@@ -1,20 +1,20 @@
-import React from 'react';
-import { Authenticator } from '@aws-amplify/ui-react';
-import UserProfile from './UserProfile';
+import { withAuthenticator } from '@aws-amplify/ui-react';
+import { Auth } from 'aws-amplify'; // Import the Auth module
 
-function AuthenticatorContainer({ authOpen, onClose }) {
+function AuthenticatorContainer({ authOpen, onClose, user, onLogout }) {
   const handleFormClick = (e) => {
-    e.stopPropagation(); // Prevent clicks inside the form from closing the window
-    onClose(); // Close the overlay when clicking outside the form
+    e.stopPropagation();
   };
 
   return authOpen ? (
     <div className="auth-form-container" onClick={onClose}>
       <div className="auth-form" onClick={handleFormClick}>
-        <Authenticator signUpAttributes={["email"]} />
+        ferofiheowrhfoiwehjrfioj
       </div>
+      
+      <button onClick={() => Auth.signOut()}>Logout</button>
     </div>
   ) : null;
 }
 
-export default AuthenticatorContainer;
+export default withAuthenticator(AuthenticatorContainer);
