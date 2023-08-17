@@ -153,6 +153,29 @@
                                     "Effect": "Allow",
                                     "Action": "ssm:GetParameter",
                                     "Resource": "arn:aws:ssm:ap-southeast-2:286456780400:parameter/your-parameter-name"
+                                },
+                                {
+                                    "Effect": "Allow",
+                                    "Action": ["ec2:DescribeNetworkInterfaces","ec2:DeleteNetworkInterface"],
+                                    "Resource": "*"
+                                }
+                            ]
+                        }
+                    },
+                    {
+                        "PolicyName": "TagCognitoUserFunctionPolicy",
+                        "PolicyDocument": {
+                            "Version": "2012-10-17",
+                            "Statement": [
+                                {
+                                    "Effect": "Allow",
+                                    "Action": "lambda:InvokeFunction",
+                                    "Resource": "*"
+                                },
+                                {
+                                    "Effect": "Allow",
+                                    "Action": "ec2:CreateNetworkInterface",
+                                    "Resource": "*"
                                 }
                             ]
                         }

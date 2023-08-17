@@ -17,151 +17,99 @@
     }
     },
     "Resources":{
-        "GetValueFunction": {
+        "TagCognitoUserFunctionRole": {
+            "Type": "AWS::IAM::Role",
+            "Properties": {
+                "AssumeRolePolicyDocument": {
+                    "Version": "2012-10-17",
+                    "Statement": [
+                        {
+                            "Effect": "Allow",
+                            "Principal": {
+                                "Service": "lambda.amazonaws.com"
+                            },
+                            "Action": "sts:AssumeRole"
+                        }
+                    ]
+                },
+                "Policies": [
+                    {
+                        "PolicyName": "TagCognitoUserPolicy",
+                        "PolicyDocument": {
+                            "Version": "2012-10-17",
+                            "Statement": [
+                                {
+                                    "Effect": "Allow",
+                                    "Action": [
+                                        "cognito-idp:AdminUpdateUserAttributes",
+                                        "cognito-idp:AdminGetUser"
+                                    ],
+                                    "Resource": "*"
+                                },
+                                {
+                                    "Effect": "Allow",
+                                    "Action": [
+                                        "logs:CreateLogGroup",
+                                        "logs:CreateLogStream",
+                                        "logs:PutLogEvents"
+                                    ],
+                                    "Resource": "arn:aws:logs:ap-southeast-2:286456780400:*"
+                                },
+                                {
+                                    "Effect": "Allow",
+                                    "Action": "ssm:GetParameter",
+                                    "Resource": "arn:aws:ssm:ap-southeast-2:286456780400:parameter/your-parameter-name"
+                                },
+                                {
+                                    "Effect": "Allow",
+                                    "Action": ["ec2:DescribeNetworkInterfaces","ec2:DeleteNetworkInterface"],
+                                    "Resource": "*"
+                                }
+                            ]
+                        }
+                    },
+                    {
+                        "PolicyName": "TagCognitoUserFunctionPolicy",
+                        "PolicyDocument": {
+                            "Version": "2012-10-17",
+                            "Statement": [
+                                {
+                                    "Effect": "Allow",
+                                    "Action": "lambda:InvokeFunction",
+                                    "Resource": "*"
+                                },
+                                {
+                                    "Effect": "Allow",
+                                    "Action": "ec2:CreateNetworkInterface",
+                                    "Resource": "*"
+                                }
+                            ]
+                        }
+                    }
+                ]
+            }
+        },
+        "TagCognitoUserFunction": {
             "Type": "AWS::Lambda::Function",
             "Properties": {
-              "Code": {
-                "S3Bucket": "repair-lneil",
-                "S3Key": "get-value.zip"
-              },
-              "Role": "arn:aws:iam::286456780400:role/service-role/add-customer-role-sxndynrl",
-              "Runtime": "python3.7",
-              "Handler": "get-value.lambda_handler",
-              "VpcConfig": {
-                "SubnetIds": [
-                  "subnet-0f7a246f9e06f81d2",
-                  "subnet-0af6145256374ccf3",
-                  "subnet-021c1678adadf3366"
-                ],
-                "SecurityGroupIds": [
-                  "sg-0d2971aad7d08fa3f"
-                ]
-              }
-              }
-          },
-          "ApiGateway": {
-              "Type": "AWS::ApiGateway::RestApi",
-              "Properties": {
-                  "Name": "ApiGateway"
-              }
-          },
-          
-        "ApiGatewayRootResourceId": {
-            "Type": "AWS::ApiGateway::Resource",
-            "Properties": {
-                "RestApiId": { "Ref": "ApiGateway" },
-                "ParentId": { "Fn::GetAtt": [ "ApiGateway", "RootResourceId" ] },
-                "PathPart": "dev"
-            }
-        },
-          "GetValueResource": {
-            "Type": "AWS::ApiGateway::Resource",
-            "Properties": {
-              "RestApiId": { "Ref": "ApiGateway" },
-              "ParentId": { "Ref": "ApiGatewayRootResourceId" },
-              "PathPart": "getvalue"
-            }
-        },
-          "GetValueMethod": {
-            "Type": "AWS::ApiGateway::Method",
-            "Properties": {
-              "RestApiId": { "Ref": "ApiGateway" },
-              "ResourceId": { "Ref": "GetValueResource" },
-              "HttpMethod": "POST",
-              "AuthorizationType": "NONE",
-              "Integration": {
-                "Type": "AWS_PROXY",
-                "IntegrationHttpMethod": "POST",
-                "Uri": {
-                  "Fn::Sub": "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${GetValueFunction.Arn}/invocations"
+                "Handler": "tag-cognito-user.lambda_handler",
+                "Role": { "Fn::GetAtt": [ "TagCognitoUserFunctionRole", "Arn" ] },
+                "Code": {
+                    "S3Bucket": "repair-lneil",
+                    "S3Key": "tag-cognito-user.zip"
+                },
+                "Runtime": "python3.7",
+                "VpcConfig": {
+                    "SubnetIds": [
+                        "subnet-0f7a246f9e06f81d2",
+                        "subnet-0af6145256374ccf3",
+                        "subnet-021c1678adadf3366"
+                    ],
+                    "SecurityGroupIds": [
+                        "sg-0d2971aad7d08fa3f"
+                    ]
                 }
-              },
-              "MethodResponses": [
-                {
-                    "StatusCode": 200,
-                    "ResponseParameters": {
-                        "method.response.header.Access-Control-Allow-Headers": "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token'",
-                        "method.response.header.Access-Control-Allow-Methods": "'OPTIONS,POST,GET,DELETE,PUT'",
-                        "method.response.header.Access-Control-Allow-Origin": "'*'"
-                    }
-                }
-            ]
             }
-        },
-        "GetValueMethodPermission": {
-            "Type": "AWS::Lambda::Permission",
-            "Properties": {
-              "Action": "lambda:InvokeFunction",
-              "FunctionName": { "Ref": "GetValueFunction" },
-              "Principal": "apigateway.amazonaws.com",
-              "SourceArn": {
-                "Fn::Sub": "arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${ApiGateway}/*/POST/dev/getvalue"
-              }
-            }
-        },
-        "ApiGatewayDeployment": {
-            "Type": "AWS::ApiGateway::Deployment",
-            "DependsOn": [ "GetValueMethod" ],
-            "Properties": {
-                "RestApiId": { "Ref": "ApiGateway" },
-                "StageName": "prod"
-            }
-        },
-        "TagCognitoUserFunctionRole": {
-          "Type": "AWS::IAM::Role",
-          "Properties": {
-              "AssumeRolePolicyDocument": {
-                  "Version": "2012-10-17",
-                  "Statement": [
-                      {
-                          "Effect": "Allow",
-                          "Principal": {
-                              "Service": "lambda.amazonaws.com"
-                          },
-                          "Action": "sts:AssumeRole"
-                      }
-                  ]
-              },
-              "Policies": [
-                  {
-                      "PolicyName": "TagCognitoUserPolicy",
-                      "PolicyDocument": {
-                          "Version": "2012-10-17",
-                          "Statement": [
-                              {
-                                  "Effect": "Allow",
-                                  "Action": [
-                                      "cognito-idp:AdminUpdateUserAttributes",
-                                      "cognito-idp:AdminGetUser"
-                                  ],
-                                  "Resource": "*"
-                              },
-                              {
-                                  "Effect": "Allow",
-                                  "Action": [
-                                      "logs:CreateLogGroup",
-                                      "logs:CreateLogStream",
-                                      "logs:PutLogEvents"
-                                  ],
-                                  "Resource": "arn:aws:logs:ap-southeast-2:286456780400:*"
-                              }
-                          ]
-                      }
-                  }
-              ]
-          }
-      },
-        "TagCognitoUserFunction": {
-          "Type": "AWS::Lambda::Function",
-          "Properties": {
-              "Handler": "tag-cognito-user.lambda_handler",
-              "Role": { "Fn::GetAtt": [ "TagCognitoUserFunctionRole", "Arn" ] },
-              "Code": {
-                  "S3Bucket": "repair-lneil",
-                  "S3Key": "tag-cognito-user.zip"
-              },
-              "Runtime": "python3.7"
-          }
-      }
+        }
     }
 }

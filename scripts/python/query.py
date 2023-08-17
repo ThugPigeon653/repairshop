@@ -16,28 +16,21 @@ def get_parameter_value(parameter_name):
 
 def lambda_handler(event, context):
     try:
-        # Retrieve search parameters and table name from the event payload
+        # Retrieve search parameters, table name, and pagination parameters from the event payload
         search_params = event.get('search_params', {})
         table_name = event.get('table_name')
         select_value = event.get('select_value')
         select_columns = event.get('select_columns', [])
+        page_number = event.get('page_number', 1)
+        records_per_page = event.get('records_per_page', 10)
 
-        # Validate input payload
-        if not isinstance(search_params, dict):
-            raise ValueError('Invalid search parameters')
-        if not isinstance(table_name, str) or not table_name:
-            raise ValueError('Invalid table name')
-
-        # Retrieve the tenant tag from user attributes
-        tenant_tag = event['request']['userAttributes']['custom:tenant_tag']
-
-        # Construct the SQL query dynamically based on the search parameters, table name, select value, and tenant tag
+        # Construct the select_clause here
         if select_columns:
             select_clause = sql.SQL(', ').join(sql.Identifier(column) for column in select_columns)
         else:
             select_clause = sql.SQL('*')
 
-        query = sql.SQL("SELECT {} FROM {} WHERE {} AND tenant_tag = {}").format(
+        query = sql.SQL("SELECT {} FROM {} WHERE {} LIMIT {} OFFSET {}").format(
             select_clause,
             sql.Identifier(table_name),
             sql.SQL(' AND ').join(
@@ -47,7 +40,8 @@ def lambda_handler(event, context):
                 )
                 for column, search_term in search_params.items()
             ),
-            sql.Literal(tenant_tag)
+            sql.Literal(records_per_page),
+            sql.Literal((page_number - 1) * records_per_page)
         )
 
         # Retrieve database connection information from SSM Parameter Store
