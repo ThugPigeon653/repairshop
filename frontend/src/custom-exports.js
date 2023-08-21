@@ -1,9 +1,5 @@
-const customConfig = {
-    'aws_cognito_region': 'ap-southeast-2',
-    'aws_user_pools_id': 'ap-southeast-2_mKgnf0JFh',
-    'aws_user_pools_app_client_id': '5l2ci7omt49ob6pp94lf23b842',
-  };
 
-const apiEndpoint = "https://57m7jnjnxe.execute-api.ap-southeast-2.amazonaws.com/prod/dev"
+// See about this endpoint clouformation for more info...
+const apiEndpoint = "https://kaql0yku1l.execute-api.ap-southeast-2.amazonaws.com/prod/dev/"
   
   export { apiEndpoint };
